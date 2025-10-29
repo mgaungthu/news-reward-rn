@@ -1,0 +1,15 @@
+import { Stack } from "expo-router";
+
+export default function NewsLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false, // you use custom Header
+        animation: "slide_from_right", // ✅ smooth transition
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="[id]" />
+    </Stack>
+  );
+}
