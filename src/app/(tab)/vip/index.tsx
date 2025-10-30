@@ -36,17 +36,13 @@ export default function VipPosts() {
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-    
       getUserPurchaseList();
-    
-    
   }, [isLoggedIn]);
 
   const getUserPurchaseList = () => {
       if(isLoggedIn){
         return  fetchUserVipPosts();
     }
-
     return;
   }
 
@@ -82,6 +78,27 @@ export default function VipPosts() {
 
   if (isError || vipPosts.length === 0) {
     return (
+       <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: 16,
+        alignItems: "center",
+      }}
+    > 
+      <TitleHeader title="VIP Posts" align="center" />
+       <Text
+        style={{
+          fontSize: 14,
+          color: colors.textSecondary || "#888",
+          marginBottom: 20,
+          textAlign: "center",
+          width: "90%",
+        }}
+      >
+        Unlock exclusive VIP posts using your earned points to access premium
+        content and rewards.
+      </Text>
       <View
         style={{
           flex: 1,
@@ -92,6 +109,7 @@ export default function VipPosts() {
       >
         <Text style={{ color: colors.text }}>No VIP posts available.</Text>
       </View>
+      </SafeAreaView>
     );
   }
 
@@ -137,6 +155,7 @@ export default function VipPosts() {
             title={post.title}
             excerpt={post.excerpt}
             feature_image={post.feature_image}
+            feature_image_url={post.feature_image_url}
             purchase={post.purchased}
             adKey="vip_card"
             threshold={2}

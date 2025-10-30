@@ -8,6 +8,7 @@ const axiosInstance = axios.create({
   timeout: 10000,
 });
 
+console.log(API_BASE_URL)
 
 
 // Add request interceptor

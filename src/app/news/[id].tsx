@@ -1,8 +1,10 @@
 import { getPostById } from "@/api/postApi";
+import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { Header } from "@/components/Header";
 import { PostWebView } from "@/components/PostWebView";
 import { VimeoPlayer } from "@/components/VimeoPlayer";
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { useQuery } from "@tanstack/react-query";
@@ -31,11 +33,13 @@ export default function NewsDetail() {
   const { colors } = useTheme();
   const [showWebView, setShowWebView] = useState(false);
   const { width } = useWindowDimensions();
+  const { isLoggedIn } = useAuth();
 
   const {
     data: post,
     isLoading,
     isError,
+    refetch
   } = useQuery({
     queryKey: ["post", id],
     queryFn: () => getPostById(id as string),
@@ -76,11 +80,12 @@ export default function NewsDetail() {
         claim.post_id === post.id && claim.status === "claimed"
     );
 
-    console.log(post)
-
   // When WebView is active
   if (showWebView && post.read_more_url) {
-    return <PostWebView post={post} onBack={() => setShowWebView(false)} />;
+    return <PostWebView post={post} onBack={() => {
+      setShowWebView(false);
+      refetch();
+    }} />;
   }
 
   // Default post detail screen
@@ -129,7 +134,7 @@ export default function NewsDetail() {
 
       <BannerAdComponent />
 
-      {post.read_more_url && (
+      {!post.is_vip && isLoggedIn && (
         <TouchableOpacity
           style={[
             styles.pointsButton,
@@ -148,6 +153,7 @@ export default function NewsDetail() {
           </Text>
         </TouchableOpacity>
       )}
+      <AppOpenAdComponent/>
     </SafeAreaView>
   );
 }

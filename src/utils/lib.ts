@@ -9,6 +9,8 @@ const { ad_interstitial_id, ad_reward_id } = useSettingsStore.getState();
 const INTERSTITIAL_ID = ad_interstitial_id;
 const REWARDED_ID = ad_reward_id;
 
+console.log(INTERSTITIAL_ID, ad_reward_id)
+
 // Create ad instances with IDs from adsConfig
 export const interstitial = InterstitialAd.createForAdRequest(INTERSTITIAL_ID, {
   requestNonPersonalizedAdsOnly: true,

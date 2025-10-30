@@ -1,6 +1,7 @@
 import { claimPostReward } from "@/api/postApi";
 import { CustomModal } from "@/components/CustomModal";
 import { Header } from "@/components/Header";
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import React, { useState } from "react";
@@ -27,6 +28,9 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
   >(null);
   const [modalMessage, setModalMessage] = useState("");
   const { colors } = useTheme();
+  const { getUser} = useAuth();
+
+  
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -77,13 +81,11 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
           if (isClaimEnabled) {
             try {
               await claimPostReward(post.id);
+              const updatedUser = await getUser();
               setModalType("success");
-              setModalMessage("Claim successful!");
+              setModalMessage(`Claim successful!\n\nYour total point is now ${updatedUser.points}`);
               setModalVisible(true);
               setIsClaimEnabled(false);
-              setTimeout(() => {
-                onBack();
-              }, 1500);
             } catch (e) {
               setModalType("error");
               setModalMessage("Failed to claim");
@@ -101,8 +103,12 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
         visible={modalVisible}
         type={modalType}
         message={modalMessage}
-        onClose={() => setModalVisible(false)}
+        onClose={() => {
+          setModalVisible(false)
+          onBack();
+        }}
       />
+      
     </SafeAreaView>
   );
 }

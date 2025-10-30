@@ -17,27 +17,23 @@ export const getPostById = async (id: number | string) => {
     const response = await axiosInstance.get(`/posts/${id}`);
     return response.data;
   } catch (error: any) {
-    console.log(error,'w');
+    console.log(error, "w");
     throw error;
   }
 };
-
-
 
 // Claim post reward
 export const claimPostReward = async (postId: number | string) => {
   try {
-   
     const response = await axiosInstance.post(`/posts/${postId}/claim`);
-    
+
     return response.data;
   } catch (error: any) {
-     console.log(error)
+    console.log(error);
     console.error("Error claiming post reward:", error.message);
     throw error;
   }
 };
-
 
 // Fetch VIP posts
 export const getVipPosts = async () => {

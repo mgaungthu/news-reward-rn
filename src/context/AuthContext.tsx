@@ -1,4 +1,4 @@
-import { loginUser, logoutUser } from "@/api/authApi";
+import { getCurrentUser, loginUser, logoutUser } from "@/api/authApi";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  getUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: async () => {},
   logout: async () => {},
+  getUser: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -55,11 +57,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
   };
 
+  const getUser = async () => {
+    try {
+      const res = await getCurrentUser();
+      setUser(res.user);
+      await SecureStore.setItemAsync("user", JSON.stringify(res.user));
+      return res.user;
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+  };
+
   const isLoggedIn = !!token;
 
   return (
     <AuthContext.Provider
-      value={{ token, user, isLoggedIn, loading, login, logout }}
+      value={{ token, user, isLoggedIn, loading, login, logout, getUser }}
     >
       {children}
     </AuthContext.Provider>

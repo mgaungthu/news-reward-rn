@@ -31,3 +31,8 @@ export const updateUserInfo = async (data: {
   const res = await axiosInstance.put("/user/update", data);
   return res.data;
 };
+
+export const getCurrentUser = async () => {
+  const res = await axiosInstance.get("/me");
+  return res.data;
+};

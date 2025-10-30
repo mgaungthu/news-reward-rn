@@ -16,12 +16,10 @@ export const AppOpenAdComponent: React.FC = () => {
   const lastShownTime = useRef<number | null>(null); // track last show time
 
 
-   const { ad_app_open_id} =
-      useSettingsStore();
+   const { ad_app_open_id} = useSettingsStore();
 
 
-    
-      
+  
   useEffect(() => {
     console.log('[GAM] AppOpenAd initializing with ID:', ad_app_open_id);
 

@@ -1,4 +1,4 @@
-import mobileAds from 'react-native-google-mobile-ads';
+import mobileAds from "react-native-google-mobile-ads";
 
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -10,14 +10,14 @@ import { StyleSheet, View } from "react-native";
 function TabLayout() {
   const { colors } = useTheme();
 
-      useEffect(() => {
-      // Initialize Google Mobile Ads SDK
-      mobileAds()
-        .initialize()
-        .then(() => {
-          console.log('AdMob initialized successfully');
-        });
-    }, []);
+  useEffect(() => {
+    // Initialize Google Mobile Ads SDK
+    mobileAds()
+      .initialize()
+      .then(() => {
+        console.log("AdMob initialized successfully");
+      });
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -34,7 +34,11 @@ function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, size, focused }) => (
-              <Ionicons name={focused ? "home" : "home-outline"} size={size} color={color} />
+              <Ionicons
+                name={focused ? "home" : "home-outline"}
+                size={size}
+                color={color}
+              />
             ),
           }}
         />
@@ -43,7 +47,11 @@ function TabLayout() {
           options={{
             title: "VIP",
             tabBarIcon: ({ color, size, focused }) => (
-               <Ionicons name={focused ? "star" : "star-outline"} size={size} color={color} />
+              <Ionicons
+                name={focused ? "star" : "star-outline"}
+                size={size}
+                color={color}
+              />
             ),
           }}
         />
@@ -52,7 +60,11 @@ function TabLayout() {
           options={{
             title: "Profile",
             tabBarIcon: ({ color, size, focused }) => (
-              <Ionicons name={focused ? "person" : "person-outline"} size={size} color={color} />
+              <Ionicons
+                name={focused ? "person" : "person-outline"}
+                size={size}
+                color={color}
+              />
             ),
           }}
         />
@@ -63,9 +75,7 @@ function TabLayout() {
           }}
         />
       </Tabs>
-      
 
-      {/* Sticky Banner above Tab Menu */}
       <View style={styles.bannerContainer}>
         <BannerAdComponent />
       </View>
@@ -84,8 +94,5 @@ const styles = StyleSheet.create({
 });
 
 export default function Layout() {
-  return (
-  
-      <TabLayout />
-  );
+  return <TabLayout />;
 }

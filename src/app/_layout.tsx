@@ -7,6 +7,8 @@ import { StatusBar } from "expo-status-bar";
 const queryClient = new QueryClient();
 
 export default function Layout() {
+
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

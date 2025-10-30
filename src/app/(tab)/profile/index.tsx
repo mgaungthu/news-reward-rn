@@ -5,21 +5,25 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 export default function Profile() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { isLoggedIn, logout, user, loading } = useAuth();
-    const { showRewardedWithCooldown } = useAds();
+  const { isLoggedIn, logout, user, loading, getUser } = useAuth();
+  const { showRewardedWithCooldown } = useAds();
+  const [refreshing, setRefreshing] = useState(false);
 
   if (loading) {
     return (
@@ -36,31 +40,48 @@ export default function Profile() {
     );
   }
 
-  
-  const handlePress = useCallback(async () => {
-    const res = await resetUserClaims();
-    console.log(res.data)
-      // const success = await showRewardedWithCooldown(
-      //   async (amount, type) => {
-      //     const res = await resetUserClaims();
-      //           alert(res.message || "Claims and points have been reset.");
-      //     Alert.alert("🎉 Reward Earned!", `You earned ${amount} ${type ?? "points"}!`);
-      //   },
-      //   (msRemaining) => {
-      //     const minutes = Math.ceil(msRemaining / 60000);
-      //     Alert.alert("⏳ Please wait", `Try again in ${minutes} minute(s).`);
-      //   }
-      // );
-  
-      // if (!success) {
-      //   console.log("Reward ad not shown yet (maybe cooling down or loading)");
-      // }
-    }, [showRewardedWithCooldown]);
+  useEffect(() => {
+    if (isLoggedIn) {
+      getUser();
+    }
+  }, [isLoggedIn]);
 
+  const handlePress = useCallback(async () => {
+    const success = await showRewardedWithCooldown(
+      async (amount, type) => {
+        Alert.alert("Now, You`re ready to get new points!");
+      },
+      (msRemaining) => {
+        const minutes = Math.ceil(msRemaining / 60000);
+        Alert.alert("Please wait", `Try again in ${minutes} minute(s).`);
+      }
+    );
+
+    if (success) {
+      await resetUserClaims();
+      Alert.alert("Now, You`re ready to get new points!");
+    } else {
+      Alert.alert("Wait", "You cannot reset right now");
+    }
+  }, [showRewardedWithCooldown]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await getUser();
+    setRefreshing(false);
+  };
 
   if (isLoggedIn) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { backgroundColor: colors.background },
+        ]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.logoContainer}>
           <Image
             source={require("../../../../assets/images/logoinapp.png")}
@@ -151,7 +172,7 @@ export default function Profile() {
           <TouchableOpacity
             onPress={async () => {
               try {
-                handlePress()
+                handlePress();
                 // const res = await resetUserClaims();
                 // alert(res.message || "Claims and points have been reset.");
               } catch (err: any) {
@@ -175,7 +196,7 @@ export default function Profile() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 

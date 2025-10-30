@@ -10,19 +10,18 @@ import React, { memo, useCallback } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { CustomModal } from "./CustomModal";
 
-
-
 type Props = {
   i: number;
   id: number;
   adKey?: string;
   threshold?: number;
   feature_image?: string;
-  feature_image_url:string;
+  feature_image_url: string;
   title?: string;
   excerpt?: string;
   key?: string;
   purchase?: number;
+  readStatus?: boolean; // 👈 add this
 };
 
 function InterstitialAdCardBase({
@@ -35,6 +34,7 @@ function InterstitialAdCardBase({
   title = `Breaking News Headline ${i}`,
   excerpt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   purchase,
+  readStatus, // 👈 add this
 }: Props) {
   const { maybeShowInterstitialOnAction } = useAds();
   const { colors } = useTheme();
@@ -44,8 +44,6 @@ function InterstitialAdCardBase({
   const [buyModalVisible, setBuyModalVisible] = React.useState(false);
   const [buyMessage, setBuyMessage] = React.useState("");
   const [buyConfirmVisible, setBuyConfirmVisible] = React.useState(false);
-
-
 
   const handlePress = useCallback(() => {
     if (adKey === "vip_card" && !isLoggedIn) {
@@ -125,10 +123,29 @@ function InterstitialAdCardBase({
               style={{
                 width: "100%",
                 height: "100%",
-                opacity: adKey === "vip_card" && purchase !== 1 ? 0.5 : 1,
+                opacity: readStatus
+                  ? 0.4
+                  : adKey === "vip_card" && purchase !== 1
+                  ? 0.5
+                  : 1,
               }}
               resizeMode="cover"
             />
+            {readStatus && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: "#fff", fontSize: 12 }}>Claimed</Text>
+              </View>
+            )}
             {adKey === "vip_card" && (
               <View style={styles.star}>
                 <Ionicons style={styles.starText} name="star" />
