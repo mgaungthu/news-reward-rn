@@ -4,21 +4,27 @@ import {
   RewardedAd
 } from "react-native-google-mobile-ads";
 
-const { ad_interstitial_id, ad_reward_id } = useSettingsStore.getState();
+// Helper to safely get ad IDs at runtime
+export const getAdIds = () => {
+  const { ad_interstitial_id, ad_reward_id } = useSettingsStore.getState();
+  return {
+    ad_interstitial_id,
+    ad_reward_id
+  };
+};
 
-const INTERSTITIAL_ID = ad_interstitial_id;
-const REWARDED_ID = ad_reward_id;
+export const createAds = () => {
+  const { ad_interstitial_id, ad_reward_id } = getAdIds();
 
-console.log(INTERSTITIAL_ID, ad_reward_id)
+  console.log('[GAM] Loaded Ad IDs:', ad_interstitial_id, ad_reward_id);
 
-// Create ad instances with IDs from adsConfig
-export const interstitial = InterstitialAd.createForAdRequest(INTERSTITIAL_ID, {
-  requestNonPersonalizedAdsOnly: true,
-});
+  const interstitial = InterstitialAd.createForAdRequest(ad_interstitial_id, {
+    requestNonPersonalizedAdsOnly: true,
+  });
 
-export const rewarded = RewardedAd.createForAdRequest(REWARDED_ID, {
-  requestNonPersonalizedAdsOnly: true,
-});
+  const rewarded = RewardedAd.createForAdRequest(ad_reward_id, {
+    requestNonPersonalizedAdsOnly: true,
+  });
 
-// Re-export enums for convenience
-// export { AdEventType, RewardedAdEventType }
+  return { interstitial, rewarded };
+};

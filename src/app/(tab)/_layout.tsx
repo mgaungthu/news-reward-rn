@@ -1,6 +1,5 @@
 import mobileAds from "react-native-google-mobile-ads";
 
-import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
@@ -76,9 +75,9 @@ function TabLayout() {
         />
       </Tabs>
 
-      <View style={styles.bannerContainer}>
+      {/* <View style={styles.bannerContainer}>
         <BannerAdComponent />
-      </View>
+      </View> */}
     </View>
   );
 }

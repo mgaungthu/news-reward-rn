@@ -21,7 +21,8 @@ type Props = {
   excerpt?: string;
   key?: string;
   purchase?: number;
-  readStatus?: boolean; // 👈 add this
+  readStatus?: boolean; 
+  created_at?: string;
 };
 
 function InterstitialAdCardBase({
@@ -35,6 +36,7 @@ function InterstitialAdCardBase({
   excerpt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   purchase,
   readStatus, // 👈 add this
+    created_at,
 }: Props) {
   const { maybeShowInterstitialOnAction } = useAds();
   const { colors } = useTheme();
@@ -46,24 +48,24 @@ function InterstitialAdCardBase({
   const [buyConfirmVisible, setBuyConfirmVisible] = React.useState(false);
 
   const handlePress = useCallback(() => {
-    if (adKey === "vip_card" && !isLoggedIn) {
-      setModalVisible(true);
-      return;
-    }
+    // if (adKey === "vip_card" && !isLoggedIn) {
+    //   setModalVisible(true);
+    //   return;
+    // }
 
-    if (adKey === "vip_card" && isLoggedIn) {
-      if (purchase === 1) {
-        // ✅ Already purchased, go directly to detail page
-        router.push({
-          pathname: "/news/[id]",
-          params: { id, title, feature_image, excerpt },
-        });
-        return;
-      }
-      // Not purchased yet, ask to buy
-      setBuyConfirmVisible(true);
-      return;
-    }
+    // if (adKey === "vip_card" && isLoggedIn) {
+    //   if (purchase === 1) {
+    //     // ✅ Already purchased, go directly to detail page
+    //     router.push({
+    //       pathname: "/news/[id]",
+    //       params: { id, title, feature_image, excerpt },
+    //     });
+    //     return;
+    //   }
+    //   // Not purchased yet, ask to buy
+    //   setBuyConfirmVisible(true);
+    //   return;
+    // }
 
     // ✅ Wait for ad to finish before navigating
     maybeShowInterstitialOnAction(adKey, threshold);
@@ -152,6 +154,7 @@ function InterstitialAdCardBase({
               </View>
             )}
           </View>
+          
         </View>
 
         <View style={styles.content}>

@@ -1,5 +1,4 @@
 import { getPostById } from "@/api/postApi";
-import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { Header } from "@/components/Header";
 import { PostWebView } from "@/components/PostWebView";
@@ -25,6 +24,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 interface UserClaim {
   post_id: number;
+  user_id:number;
   status: "pending" | "claimed" | string;
 }
 
@@ -33,7 +33,7 @@ export default function NewsDetail() {
   const { colors } = useTheme();
   const [showWebView, setShowWebView] = useState(false);
   const { width } = useWindowDimensions();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   const {
     data: post,
@@ -77,8 +77,9 @@ export default function NewsDetail() {
   const hasUserClaimed = (post: any) =>
     post.user_claims?.some(
       (claim: UserClaim) =>
-        claim.post_id === post.id && claim.status === "claimed"
+        claim.user_id === user.id && claim.status === "claimed"
     );
+
 
   // When WebView is active
   if (showWebView && post.read_more_url) {
@@ -130,9 +131,8 @@ export default function NewsDetail() {
             {post.vimeo_url && <VimeoPlayer vimeoUrl={post.vimeo_url} />}
           </View>
         </View>
+        
       </ScrollView>
-
-      <BannerAdComponent />
 
       {!post.is_vip && isLoggedIn && (
         <TouchableOpacity
@@ -153,7 +153,10 @@ export default function NewsDetail() {
           </Text>
         </TouchableOpacity>
       )}
-      <AppOpenAdComponent/>
+      <BannerAdComponent />
+
+      
+      
     </SafeAreaView>
   );
 }
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
   },
   pointsButton: {
     position: "absolute",
-    bottom: verticalScale(24),
+    bottom: verticalScale(80),
     right: scale(24),
     width: scale(50),
     height: scale(50),

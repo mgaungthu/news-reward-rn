@@ -1,4 +1,4 @@
-import { interstitial, rewarded } from "@/utils/lib";
+import { createAds } from "@/utils/lib";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -30,6 +30,9 @@ const REWARDED_EVENTS = {
 type KeyedCounter = Record<string, number>;
 
 export function useAds() {
+  const [interstitial, setInterstitial] = useState<any>(null);
+  const [rewarded, setRewarded] = useState<any>(null);
+
   const [interstitialLoaded, setInterstitialLoaded] = useState(false);
   const [rewardedLoaded, setRewardedLoaded] = useState(false);
   const [rewardedNextInMs, setRewardedNextInMs] = useState<number>(0);
@@ -40,6 +43,13 @@ export function useAds() {
 
   // ✅ new: remember we owe a show once load completes
   const pendingInterstitialShowRef = useRef(false);
+
+  // Initialize ads
+  useEffect(() => {
+    const ads = createAds();
+    setInterstitial(ads.interstitial);
+    setRewarded(ads.rewarded);
+  }, []);
 
   // ---------- helpers ----------
   const getRewardedRemainingMs = useCallback(async () => {
@@ -57,6 +67,8 @@ export function useAds() {
 
   // ---------- Interstitial wiring ----------
   useEffect(() => {
+    if (!interstitial) return;
+
     let mounted = true;
 
     const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
@@ -98,10 +110,12 @@ export function useAds() {
       unsubClosed();
       unsubError();
     };
-  }, []);
+  }, [interstitial]);
 
   // ---------- Rewarded wiring (with compat) ----------
   useEffect(() => {
+    if (!rewarded) return;
+
     let mounted = true;
 
     const unsubLoaded = rewarded.addAdEventListener(REWARDED_EVENTS.LOADED, () => {
@@ -136,7 +150,7 @@ export function useAds() {
       unsubClosed && unsubClosed();
       unsubError && unsubError();
     };
-  }, []);
+  }, [rewarded]);
 
   useEffect(() => {
     refreshRewardedRemaining();
@@ -151,19 +165,19 @@ export function useAds() {
       counters[key] = (counters[key] ?? 0) + 1;
 
       if (counters[key] % threshold === 0) {
-        if (interstitialLoaded) {
+        if (interstitialLoaded && interstitial) {
           interstitial.show();
         } else {
           // ✅ remember to show once LOADED
           pendingInterstitialShowRef.current = true;
-          if (!loadingInterstitialRef.current) {
+          if (!loadingInterstitialRef.current && interstitial) {
             loadingInterstitialRef.current = true;
             interstitial.load();
           }
         }
       }
     },
-    [interstitialLoaded]
+    [interstitialLoaded, interstitial]
   );
 
   // Show rewarded if cooldown passed; otherwise call onBlocked(msRemaining)
@@ -180,8 +194,8 @@ export function useAds() {
         return false;
       }
 
-      if (!rewardedLoaded) {
-        if (!loadingRewardedRef.current) {
+      if (!rewardedLoaded || !rewarded) {
+        if (!loadingRewardedRef.current && rewarded) {
           loadingRewardedRef.current = true;
           rewarded.load();
         }
@@ -191,7 +205,7 @@ export function useAds() {
       // One‑time reward listener
       const unsubEarned = rewarded.addAdEventListener(
         REWARDED_EVENTS.EARNED_REWARD,
-        (reward) => {
+        (reward: any) => {
           onReward?.(Number(reward?.amount ?? 1), reward?.type);
         }
       );
@@ -212,7 +226,7 @@ export function useAds() {
         rewarded.load();
       }
     },
-    [rewardedLoaded, getRewardedRemainingMs]
+    [rewardedLoaded, rewarded, getRewardedRemainingMs]
   );
 
   // Optional helpers

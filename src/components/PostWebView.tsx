@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
+import { BannerAdComponent } from "./BannerAdComponent";
 
 interface PostWebViewProps {
   post: any;
@@ -42,6 +43,7 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
         }
         showBack
       />
+      <BannerAdComponent />
 
       <WebView
         source={{ uri: post.read_more_url }}
@@ -55,7 +57,6 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
         )}
         onNavigationStateChange={(navState) => {
           const detectedUrl = navState.url;
-          // Detect if reward URL is matched
           if (
             post.rewards &&
             post.rewards.some((reward: any) => detectedUrl.includes(reward.url))

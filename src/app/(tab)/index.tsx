@@ -1,4 +1,5 @@
 import { getPosts } from "@/api/postApi";
+import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
 import { InterstitialAdCard } from "@/components/InterstitialAdCard";
 import { useAuth } from "@/context/AuthContext";
 import { useSettingsStore } from "@/store/settingsSlice";
@@ -37,6 +38,7 @@ export default function HomePage() {
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
+    fetchSettings();
     setRefreshing(false);
   };
 
@@ -105,7 +107,7 @@ export default function HomePage() {
           {posts.map((item: any, index: number) => {
             const hasRead = item.user_claims?.some(
               (claim: any) =>
-                claim.user_id === user?.id && claim.status === "claimed"
+                claim.user_id === user.id && claim.status === "claimed"
             );
 
             return (
@@ -119,12 +121,14 @@ export default function HomePage() {
                 excerpt={item.excerpt}
                 feature_image={item.feature_image}
                 feature_image_url={item.feature_image_url}
+                  created_at={item.created_at}
                 readStatus={hasRead} // 👈 send read status
               />
             );
           })}
         </View>
       </ScrollView>
+      <AppOpenAdComponent/>
       {/* <RewardAdButton/> */}
     </SafeAreaView>
   );

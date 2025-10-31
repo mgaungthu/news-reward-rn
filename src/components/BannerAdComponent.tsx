@@ -14,10 +14,12 @@ export const BannerAdComponent = () => {
       const { ad_banner_id} =
       useSettingsStore();
 
+
   return (
     <View style={{ alignItems: "center", minHeight: 60 }}>
       {!loaded && <ActivityIndicator />}
-      <BannerAd
+      {ad_banner_id && (
+        <BannerAd
         unitId={ad_banner_id}
         size={BannerAdSize.BANNER}
         onAdLoaded={() => setLoaded(true)}
@@ -28,6 +30,8 @@ export const BannerAdComponent = () => {
           requestNonPersonalizedAdsOnly: true,
         }}
       />
+      )}
+      
     </View>
   );
 };
