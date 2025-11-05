@@ -1,13 +1,19 @@
 import mobileAds from "react-native-google-mobile-ads";
 
+import { savePushToken } from "@/api/postApi";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
+import usePushNotifications from "@/hooks/usePushNotifications";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
 function TabLayout() {
   const { colors } = useTheme();
+  const { expoPushToken } = usePushNotifications(); 
+
+  
 
   useEffect(() => {
     // Initialize Google Mobile Ads SDK
@@ -16,7 +22,11 @@ function TabLayout() {
       .then(() => {
         console.log("AdMob initialized successfully");
       });
-  }, []);
+      if (expoPushToken) {
+      savePushToken(expoPushToken);
+    }
+  }, [expoPushToken]);
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -24,8 +34,38 @@ function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.primary,
-          tabBarLabelStyle: { fontSize: 12 },
-          tabBarStyle: { backgroundColor: colors.background },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            marginBottom: 8,
+            fontWeight: "600",
+          },
+          tabBarLabelPosition: "below-icon",
+          tabBarStyle: {
+            backgroundColor: colors.cardBackground,
+            borderRadius: 60,
+            borderTopRightRadius: 20,
+            borderTopLeftRadius: 20,
+            borderBottomRightRadius: 15,
+            borderBottomLeftRadius: 15,
+            height: 70,
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderTopWidth: 0,
+            elevation: 15,
+            ...Platform.select({
+              ios: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -3 },
+                shadowOpacity: 0.1,
+                shadowRadius: 5,
+              },
+              android: {
+                elevation: 10,
+              },
+            }),
+          },
         }}
       >
         <Tabs.Screen
@@ -35,7 +75,7 @@ function TabLayout() {
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
                 name={focused ? "home" : "home-outline"}
-                size={size}
+                size={size + 2}
                 color={color}
               />
             ),
@@ -48,7 +88,7 @@ function TabLayout() {
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
                 name={focused ? "star" : "star-outline"}
-                size={size}
+                size={size + 2}
                 color={color}
               />
             ),
@@ -61,23 +101,18 @@ function TabLayout() {
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
                 name={focused ? "person" : "person-outline"}
-                size={size}
+                size={size + 2}
                 color={color}
               />
             ),
           }}
         />
-        <Tabs.Screen
-          name="news"
-          options={{
-            href: null,
-          }}
-        />
+        
       </Tabs>
 
-      {/* <View style={styles.bannerContainer}>
+      <View style={styles.bannerContainer}>
         <BannerAdComponent />
-      </View> */}
+      </View>
     </View>
   );
 }
@@ -85,7 +120,7 @@ function TabLayout() {
 const styles = StyleSheet.create({
   bannerContainer: {
     position: "absolute",
-    bottom: 60, // roughly tab height
+    bottom: 60, // roughly tab height + some extra space
     width: "100%",
     alignItems: "center",
     zIndex: 10,

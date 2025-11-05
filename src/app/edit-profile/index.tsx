@@ -40,23 +40,35 @@ export default function EditProfile() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.container}
       >
         <ScrollView
-          contentContainerStyle={{ alignItems: "center", paddingBottom: verticalScale(40) }}
+          contentContainerStyle={{
+            alignItems: "center",
+            paddingBottom: verticalScale(40),
+          }}
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
           <Header title="Edit Profile" showBack />
 
           {/* Avatar Preview */}
-          <View style={[styles.avatarContainer, { backgroundColor: colors.card }]}>
+          <View
+            style={[
+              styles.avatarContainer,
+              { backgroundColor: colors.cardBackground },
+            ]}
+          >
             <Image
               source={{
-                uri: user?.avatar || "https://cdn-icons-png.flaticon.com/512/147/147142.png",
+                uri:
+                  user?.avatar ||
+                  "https://cdn-icons-png.flaticon.com/512/147/147142.png",
               }}
               style={styles.avatar}
             />
@@ -64,18 +76,28 @@ export default function EditProfile() {
 
           {/* Input Fields */}
           <View style={styles.form}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Full Name</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Full Name
+            </Text>
             <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.primary }]}
+              style={[
+                styles.input,
+                { color: colors.text, borderColor: colors.primary },
+              ]}
               value={name}
               onChangeText={setName}
               placeholder="Enter your name"
               placeholderTextColor={colors.textSecondary}
             />
 
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Email</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Email
+            </Text>
             <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.primary }]}
+              style={[
+                styles.input,
+                { color: colors.text, borderColor: colors.primary },
+              ]}
               value={email}
               onChangeText={setEmail}
               placeholder="Enter your email"
@@ -84,12 +106,18 @@ export default function EditProfile() {
             />
 
             {/* Password Confirmation */}
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Current Password</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Current Password
+            </Text>
             <View style={styles.passwordWrapper}>
               <TextInput
                 style={[
                   styles.input,
-                  { color: colors.text, borderColor: colors.primary, paddingRight: scale(40) },
+                  {
+                    color: colors.text,
+                    borderColor: colors.primary,
+                    paddingRight: scale(40),
+                  },
                 ]}
                 value={password}
                 onChangeText={setPassword}
@@ -116,14 +144,18 @@ export default function EditProfile() {
               onPress={handleSave}
               style={[styles.saveButton, { backgroundColor: colors.primary }]}
             >
-              <Text style={[styles.saveText, { color: colors.background }]}>Save Changes</Text>
+              <Text style={[styles.saveText, { color: colors.background }]}>
+                Save Changes
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => router.back()}
               style={[styles.cancelButton, { borderColor: colors.primary }]}
             >
-              <Text style={[styles.cancelText, { color: colors.primary }]}>Cancel</Text>
+              <Text style={[styles.cancelText, { color: colors.primary }]}>
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

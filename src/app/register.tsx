@@ -50,7 +50,7 @@ export default function Register() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View style={{ flex: 1, justifyContent: "center", padding: scale(20) }}>
+        <View style={{ flex: 1, justifyContent: "center",  paddingHorizontal: Platform.OS === "ios" && (Platform as any).isPad ? scale(60) : scale(24), }}>
           <View style={{ alignItems: "center" }}>
             <Image
               source={require("../../assets/images/logoinapp.png")}

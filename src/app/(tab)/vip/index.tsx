@@ -7,10 +7,14 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 
 import { useAuth } from "@/context/AuthContext";
+import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import {
   ActivityIndicator,
+  Dimensions,
+  Platform,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -19,7 +23,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function VipPosts() {
   const { colors } = useTheme();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  
 
   const {
     data: vipPosts = [],
@@ -31,20 +34,25 @@ export default function VipPosts() {
     queryFn: getVipPosts,
   });
 
+  const { width } = Dimensions.get("window");
+  const isIpad = Platform.OS === "ios" && width >= 768;
+
   const { vipPurchasePosts, loading, fetchUserVipPosts } = useVipPostStore();
 
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-      getUserPurchaseList();
+    getUserPurchaseList();
   }, [isLoggedIn]);
 
   const getUserPurchaseList = () => {
-      if(isLoggedIn){
-        return  fetchUserVipPosts();
+    if (isLoggedIn) {
+      return fetchUserVipPosts();
     }
     return;
-  }
+  };
+
+  console.log()
 
   const mergedVipPosts = vipPosts.map((post: any) => {
     const purchased = vipPurchasePosts.some((p: any) => p.id === post.id);
@@ -78,90 +86,136 @@ export default function VipPosts() {
 
   if (isError || vipPosts.length === 0) {
     return (
-       <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: 16,
-        alignItems: "center",
-      }}
-    > 
-      <TitleHeader title="VIP Posts" align="center" />
-       <Text
-        style={{
-          fontSize: 14,
-          color: colors.textSecondary || "#888",
-          marginBottom: 20,
-          textAlign: "center",
-          width: "90%",
-        }}
-      >
-        Unlock exclusive VIP posts using your earned points to access premium
-        content and rewards.
-      </Text>
-      <View
+      <SafeAreaView
         style={{
           flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
           backgroundColor: colors.background,
+          // padding: 16,
+          alignItems: "center",
         }}
       >
-        <Text style={{ color: colors.text }}>No VIP posts available.</Text>
-      </View>
+        <TitleHeader title="VIP Posts" align="center" />
+        <Text
+          style={{
+            fontSize: 14,
+            color: colors.textSecondary || "#888",
+            marginBottom: 20,
+            textAlign: "center",
+            width: "90%",
+          }}
+        >
+          Unlock exclusive VIP posts using your earned points to access premium
+          content and rewards.
+        </Text>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.background,
+          }}
+        >
+          <Text style={{ color: colors.text }}>No VIP posts available.</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: 16,
-        alignItems: "center",
-      }}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <TitleHeader title="VIP Posts" align="center" />
-      <Text
-        style={{
-          fontSize: 14,
-          color: colors.textSecondary || "#888",
-          marginBottom: 20,
-          textAlign: "center",
-          width: "90%",
-        }}
-      >
-        Unlock exclusive VIP posts using your earned points to access premium
-        content and rewards.
-      </Text>
       <ScrollView
-        contentContainerStyle={{
-          alignItems: "center",
-        }}
+        style={styles.container}
+        contentContainerStyle={{ padding: scale(16) }}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
       >
-        {mergedVipPosts.map((post: any, i: number) => (
-          <InterstitialAdCard
-            key={post.id}
-            i={i}
-            id={post.id}
-            title={post.title}
-            excerpt={post.excerpt}
-            feature_image={post.feature_image}
-            feature_image_url={post.feature_image_url}
-            purchase={post.purchased}
-            adKey="vip_card"
-            threshold={2}
-          />
-        ))}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>VIP Posts</Text>
+          <Text style={[styles.subtitle, { color: colors.muted }]}>
+            Unlock exclusive VIP posts using your earned points to access
+            premium content and rewards.
+          </Text>
+        </View>
+
+        <View style={[styles.section]}>
+          <View style={[isIpad && styles.postsGrid]}>
+            {isLoading && <ActivityIndicator color={colors.primary} />}
+            {isError && (
+              <Text style={{ color: "red" }}>
+                Failed to load posts. Pull to refresh.
+              </Text>
+            )}
+            {!isLoading && !isError && mergedVipPosts.length === 0 && (
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: colors.muted,
+                  marginTop: 20,
+                }}
+              >
+                No posts available at the moment.
+              </Text>
+            )}
+            {mergedVipPosts.map((post: any, i: number) => (
+              <View key={post.id} style={[isIpad && styles.cardWrapper]}>
+                <InterstitialAdCard
+                  i={i}
+                  id={post.id}
+                  title={post.title}
+                  excerpt={post.excerpt}
+                  feature_image={post.feature_image}
+                  feature_image_url={post.feature_image_url}
+                  purchase={post.purchased}
+                  adKey="vip_card"
+                  threshold={3}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    marginBottom: verticalScale(16),
+    
+  },
+  title: {
+    fontSize: moderateScale(28),
+    fontWeight: "700",
+    textAlign:'center'
+  },
+  subtitle: {
+    fontSize: moderateScale(16),
+    marginTop: verticalScale(4),
+    textAlign:'center'
+  },
+  section: {
+    marginBottom: verticalScale(24),
+  },
+  postsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  cardWrapper: {
+    width: "48%",
+    marginBottom: verticalScale(16),
+  },
+});

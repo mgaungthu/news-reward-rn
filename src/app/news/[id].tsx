@@ -12,6 +12,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -77,7 +78,11 @@ export default function NewsDetail() {
   const hasUserClaimed = (post: any) =>
     post.user_claims?.some(
       (claim: UserClaim) =>
+<<<<<<< HEAD
         claim.user_id === user.id && claim.status === "claimed"
+=======
+        claim.user_id === user?.id && claim.status === "claimed"
+>>>>>>> 7db23fb (bk)
     );
 
 
@@ -130,11 +135,43 @@ export default function NewsDetail() {
           <View style={{ marginVertical: 20 }}>
             {post.vimeo_url && <VimeoPlayer vimeoUrl={post.vimeo_url} />}
           </View>
+
+          {!post.is_vip && isLoggedIn && (
+            <TouchableOpacity
+              style={[
+                styles.pointsButton,
+                {
+                  backgroundColor: hasUserClaimed(post)
+                    ? colors.textSecondary
+                    : colors.primary,
+                  opacity: hasUserClaimed(post) ? 0.6 : 1,
+                  alignSelf: "center",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                },
+              ]}
+              disabled={hasUserClaimed(post)}
+              onPress={() => setShowWebView(true)}
+            >
+              <Text style={[styles.pointsButtonText, { color: colors.background }]}>
+                {hasUserClaimed(post) ? "Claimed" : "Claim your point"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
         
       </ScrollView>
 
+<<<<<<< HEAD
       {!post.is_vip && isLoggedIn && (
+=======
+      {/* {!post.is_vip && isLoggedIn && (
+>>>>>>> 7db23fb (bk)
         <TouchableOpacity
           style={[
             styles.pointsButton,
@@ -152,7 +189,11 @@ export default function NewsDetail() {
             {hasUserClaimed(post) ? "Claimed" : "Points"}
           </Text>
         </TouchableOpacity>
+<<<<<<< HEAD
       )}
+=======
+      )} */}
+>>>>>>> 7db23fb (bk)
       <BannerAdComponent />
 
       
@@ -175,7 +216,9 @@ const styles = StyleSheet.create({
   },
   featureImage: {
     width: "100%",
-    height: verticalScale(180),
+    height: Platform.OS === "ios" && (Platform as any).isPad
+        ? verticalScale(220)
+        : verticalScale(180),
     resizeMode: "cover",
   },
   contentContainer: {
@@ -195,12 +238,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pointsButton: {
+<<<<<<< HEAD
     position: "absolute",
     bottom: verticalScale(80),
     right: scale(24),
     width: scale(50),
     height: scale(50),
     borderRadius: scale(28),
+=======
+    // Removed position: "absolute",
+    // Removed bottom, right positioning
+    width: scale(120),
+    height: scale(35),
+>>>>>>> 7db23fb (bk)
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",

@@ -17,25 +17,46 @@
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-firebase/app",
+      
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#EC3E38"
+        }
+      ]
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.mandalayads.lotayadinga",
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-3940256099942544~1458002511"
-      }
-    },
     "splash": {
       "image": "./assets/images/splash-icon.png",
-      "resizeMode": "cover",
+      "resizeMode": "contain",
       "backgroundColor": "#ffffff",
+      "ios": {
+        "image": "./assets/images/splash_ios.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      },
       "dark": {
         "image": "./assets/images/splash-dark.png",
         "backgroundColor": "#181517"
       }
     },
+    "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "usesAppleSignIn": true,
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mandalayads.lotayadinga",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-3940256099942544~1458002511",
+        "infoPlist": {
+          "OneSignalAppID": "b33db3d0-6cc3-413d-b8d6-594cd4179dd4",
+          "OneSignal_enable_in_app_alert_notification": true
+        }
+      }
+    },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"

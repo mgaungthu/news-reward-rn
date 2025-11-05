@@ -2,6 +2,7 @@ import { buyVipPost } from "@/api/postApi";
 import { SUCCESS_MESSAGES } from "@/constants/messages";
 import { useAuth } from "@/context/AuthContext";
 import { useAds } from "@/hooks/useAds";
+import { useVipPostStore } from "@/store/useVipPostStore";
 import { useTheme } from "@/theme/ThemeProvider";
 import { handleApiError } from "@/utils/handleApiError";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,6 +47,8 @@ function InterstitialAdCardBase({
   const [buyModalVisible, setBuyModalVisible] = React.useState(false);
   const [buyMessage, setBuyMessage] = React.useState("");
   const [buyConfirmVisible, setBuyConfirmVisible] = React.useState(false);
+
+  const { fetchUserVipPosts } = useVipPostStore();
 
   const handlePress = useCallback(() => {
     // if (adKey === "vip_card" && !isLoggedIn) {
@@ -97,6 +100,8 @@ function InterstitialAdCardBase({
       } else {
         setBuyMessage(SUCCESS_MESSAGES.VIP_PURCHASE_SUCCESS);
       }
+
+      fetchUserVipPosts();
     } catch (error: any) {
       const message = handleApiError(error);
       setBuyMessage(message);
@@ -211,12 +216,14 @@ export const InterstitialAdCard = memo(InterstitialAdCardBase);
 const styles = StyleSheet.create({
   container: {
     borderRadius: 10,
-    overflow: "hidden",
+    overflow: "visible",
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
     shadowRadius: 4,
+    // Android shadow
     elevation: 3,
   },
   imageWrapper: {

@@ -77,3 +77,17 @@ export const resetUserClaims = async () => {
     throw error;
   }
 };
+
+// Save push token
+export const savePushToken = async (pushToken : string) => {
+  try {
+    const response = await axiosInstance.post("/save-push-token", {
+      expo_push_token: pushToken,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.log(error)
+    console.error("Error saving push token:", error.message);
+    throw error;
+  }
+};

@@ -1,4 +1,5 @@
 import { getCurrentUser, loginUser, logoutUser } from "@/api/authApi";
+import { useVipPostStore } from "@/store/useVipPostStore";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const {clearVipPosts} = useVipPostStore();
 
   // Check stored token on app start
   useEffect(() => {
@@ -51,6 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Logout logic
   const logout = async () => {
     await logoutUser().catch(() => null);
+    clearVipPosts();
     await SecureStore.deleteItemAsync("accessToken");
     await SecureStore.deleteItemAsync("user");
     setToken(null);

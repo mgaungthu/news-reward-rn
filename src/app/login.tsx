@@ -69,7 +69,7 @@ export default function Login() {
           style={{
             flex: 1,
             justifyContent: "center",
-            paddingHorizontal: scale(24),
+            paddingHorizontal: Platform.OS === "ios" && (Platform as any).isPad ? scale(60) : scale(24),
           }}
         >
           <View style={{ alignItems: "center" }}>

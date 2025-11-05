@@ -1,5 +1,6 @@
 import axiosInstance from "@/api/axiosInstance";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -37,7 +38,28 @@ export const useSettingsStore = create<SettingsState>()(
         set({ loading: true, error: null });
         try {
           const res = await axiosInstance.get("/settings");
-          set({ ...res.data.data, loading: false });
+          const data = res.data.data;
+
+          const platformSettings =
+            Platform.OS === "android"
+              ? {
+                  ad_banner_id: data.ad_banner_id_android || "",
+                  ad_interstitial_id: data.ad_interstitial_id_android || "",
+                  ad_reward_id: data.ad_reward_id_android || "",
+                  ad_app_open_id: data.ad_app_open_id_android || "",
+                }
+              : {
+                  ad_banner_id: data.ad_banner_id_ios || "",
+                  ad_interstitial_id: data.ad_interstitial_id_ios || "",
+                  ad_reward_id: data.ad_reward_id_ios || "",
+                  ad_app_open_id: data.ad_app_open_id_ios || "",
+                };
+
+          set({
+            ...data,
+            ...platformSettings,
+            loading: false,
+          });
         } catch (err: any) {
           set({ loading: false, error: err.response?.data || err.message });
         }

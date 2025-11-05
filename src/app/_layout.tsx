@@ -1,3 +1,4 @@
+import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,12 +8,11 @@ import { StatusBar } from "expo-status-bar";
 const queryClient = new QueryClient();
 
 export default function Layout() {
-
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
+          <AppOpenAdComponent />
           <StatusBar style="dark" />
           <Stack
             screenOptions={{

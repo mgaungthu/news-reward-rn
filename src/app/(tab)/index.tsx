@@ -5,20 +5,24 @@ import { useAuth } from "@/context/AuthContext";
 import { useSettingsStore } from "@/store/settingsSlice";
 import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function HomePage() {
+export default  function HomePage() {
   const { colors } = useTheme();
   const { user } = useAuth();
 
@@ -30,9 +34,19 @@ export default function HomePage() {
 
   const [refreshing, setRefreshing] = useState(false);
 
+
+const logScreenView = async (screenName: string) => {
+  const analyticsInstance = getAnalytics();
+  await logEvent(analyticsInstance, 'screen_view', {
+    firebase_screen: screenName,
+    firebase_screen_class: screenName,
+  });
+};
+
   useEffect(() => {
     fetchSettings();
     refetch();
+    logScreenView('home');
   }, []);
 
   const onRefresh = async () => {
@@ -43,6 +57,9 @@ export default function HomePage() {
   };
 
   const posts = data?.data || data || [];
+
+  const { width } = Dimensions.get("window");
+  const isIpad = Platform.OS === "ios" && width >= 768;
 
   return (
     <SafeAreaView
@@ -74,17 +91,49 @@ export default function HomePage() {
           />
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Latest Posts
-            </Text>
-            {/* <Link href="/news" asChild>
-              <TouchableOpacity>
-                <Text style={[styles.link, { color: colors.primary }]}>View All</Text>
-              </TouchableOpacity>
-            </Link> */}
+        <View style={[styles.section]}>
+          <View style={[isIpad && styles.postsGrid]}>
+            {isLoading && <ActivityIndicator color={colors.primary} />}
+            {isError && (
+              <Text style={{ color: "red" }}>
+                Failed to load posts. Pull to refresh.
+              </Text>
+            )}
+            {!isLoading && !isError && posts.length === 0 && (
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: colors.muted,
+                  marginTop: 20,
+                }}
+              >
+                No posts available at the moment.
+              </Text>
+            )}
+            {posts.map((item: any, index: number) => {
+              const hasRead = item.user_claims?.some(
+                (claim: any) => claim.user_id === user?.id && claim.status === "claimed"
+              );
+
+              return (
+                <View key={item.id} style={[isIpad && styles.cardWrapper]}>
+                  <InterstitialAdCard
+                    i={index}
+                    adKey="news_home"
+                    threshold={3}
+                    id={item.id}
+                    title={item.title}
+                    excerpt={item.excerpt}
+                    feature_image={item.feature_image}
+                    feature_image_url={item.feature_image_url}
+                    created_at={item.created_at}
+                    readStatus={hasRead}
+                  />
+                </View>
+              );
+            })}
           </View>
+<<<<<<< HEAD
 
           {isLoading && <ActivityIndicator color={colors.primary} />}
           {isError && (
@@ -130,6 +179,11 @@ export default function HomePage() {
       </ScrollView>
       <AppOpenAdComponent/>
       {/* <RewardAdButton/> */}
+=======
+        </View>
+      </ScrollView>
+     
+>>>>>>> 7db23fb (bk)
     </SafeAreaView>
   );
 }
@@ -159,52 +213,22 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: "100%",
-    height: verticalScale(180),
+    height:
+  Platform.OS === "ios" && (Platform as any).isPad
+    ? verticalScale(220)
+    : verticalScale(160),
     borderRadius: scale(12),
   },
   section: {
     marginBottom: verticalScale(24),
   },
-  sectionHeader: {
+  postsGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: verticalScale(12),
   },
-  sectionTitle: {
-    fontSize: moderateScale(20),
-    fontWeight: "600",
-  },
-  link: {
-    fontWeight: "500",
-  },
-  card: {
-    borderRadius: scale(10),
-    padding: scale(12),
-    marginBottom: verticalScale(10),
-  },
-  cardTitle: {
-    fontSize: moderateScale(16),
-    fontWeight: "600",
-  },
-  cardExcerpt: {
-    fontSize: moderateScale(14),
-    marginTop: verticalScale(4),
-  },
-  rewardsButton: {
-    borderRadius: scale(10),
-    paddingVertical: verticalScale(14),
-    alignItems: "center",
-  },
-  rewardsText: {
-    color: "#fff",
-    fontSize: moderateScale(16),
-    fontWeight: "600",
-  },
-  cardImage: {
-    width: "100%",
-    height: verticalScale(120),
-    borderRadius: scale(8),
-    marginBottom: verticalScale(8),
+  cardWrapper: {
+    width: "48%",
+    marginBottom: verticalScale(16),
   },
 });

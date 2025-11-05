@@ -1,65 +1,72 @@
 import { useSettingsStore } from "@/store/settingsSlice";
-import React, { useEffect, useRef } from 'react';
-import { AppState } from 'react-native';
-import { AdEventType, AppOpenAd } from 'react-native-google-mobile-ads';
-
-const adUnitId = __DEV__ ? '/6499/example/app-open' : '/YOUR_NETWORK_ID/YOUR_AD_UNIT_NAME';
-const appOpenAd = AppOpenAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
-
-
+import React, { useEffect, useRef } from "react";
+import { AppState } from "react-native";
+import { AdEventType, AppOpenAd } from "react-native-google-mobile-ads";
 
 export const AppOpenAdComponent: React.FC = () => {
   const appState = useRef(AppState.currentState);
   const isAdShowing = useRef(false);
-  const lastShownTime = useRef<number | null>(null); // track last show time
+  const isAdLoaded = useRef(false);
+  const lastShownTime = useRef<number | null>(null);
+  const { ad_app_open_id } = useSettingsStore();
 
-
-   const { ad_app_open_id} = useSettingsStore();
-
-
-  
   useEffect(() => {
-    console.log('[GAM] AppOpenAd initializing with ID:', ad_app_open_id);
+    const appOpenAd = AppOpenAd.createForAdRequest(
+      ad_app_open_id || "/6499/example/app-open",
+      { requestNonPersonalizedAdsOnly: true }
+    );
 
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      console.log('[GAM] App state changed:', nextAppState);
+    console.log("[GAM] AppOpenAd initializing with ID:", ad_app_open_id);
 
-      const now = Date.now();
-      const elapsed = lastShownTime.current ? now - lastShownTime.current : null;
-
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (
         appState.current.match(/inactive|background/) &&
-        nextAppState === 'active' &&
-        !isAdShowing.current &&
-        (!elapsed || elapsed > 20000) // only show again after 20s
+        nextAppState === "active" &&
+        !isAdShowing.current
       ) {
-        console.log('[GAM] App became active — loading ad...');
-        appOpenAd.load();
-      }
+        const now = Date.now();
+        const elapsed = lastShownTime.current
+          ? now - lastShownTime.current
+          : null;
 
+        if (!elapsed || elapsed > 20000) {
+          console.log("[GAM] App became active — preparing to show ad...");
+          if (!isAdLoaded.current) appOpenAd.load();
+        }
+      }
       appState.current = nextAppState;
     });
 
-    const loadedListener = appOpenAd.addAdEventListener(AdEventType.LOADED, () => {
-      console.log('[GAM] Ad loaded successfully ✅');
-      if (!isAdShowing.current) {
-        isAdShowing.current = true;
-        lastShownTime.current = Date.now();
-        appOpenAd.show();
+    const loadedListener = appOpenAd.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        if (!isAdShowing.current) {
+          console.log("[GAM] Ad loaded successfully ✅");
+          isAdLoaded.current = true;
+          isAdShowing.current = true;
+          lastShownTime.current = Date.now();
+          appOpenAd.show();
+        }
       }
-    });
+    );
 
-    const closedListener = appOpenAd.addAdEventListener(AdEventType.CLOSED, () => {
-      console.log('[GAM] Ad closed by user');
-      isAdShowing.current = false;
-    });
+    const closedListener = appOpenAd.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        console.log("[GAM] Ad closed by user");
+        isAdShowing.current = false;
+        isAdLoaded.current = false;
+      }
+    );
 
-    const errorListener = appOpenAd.addAdEventListener(AdEventType.ERROR, error => {
-      console.log('[GAM] Failed to load/show ad ❌', error);
-      isAdShowing.current = false;
-    });
+    const errorListener = appOpenAd.addAdEventListener(
+      AdEventType.ERROR,
+      (error) => {
+        console.log("[GAM] Failed to load/show ad ❌", error);
+        isAdShowing.current = false;
+        isAdLoaded.current = false;
+      }
+    );
 
     appOpenAd.load();
 
