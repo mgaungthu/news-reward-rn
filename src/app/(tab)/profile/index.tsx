@@ -56,10 +56,6 @@ export default function Profile() {
         Alert.alert("Please wait", `Try again in ${minutes} minute(s).`);
       }
     );
-<<<<<<< HEAD
-    await resetUserClaims();
-=======
->>>>>>> 7db23fb (bk)
     if (success) {
       await resetUserClaims();
       Alert.alert("Now, You`re ready to get new points!");

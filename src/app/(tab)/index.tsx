@@ -1,5 +1,4 @@
 import { getPosts } from "@/api/postApi";
-import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
 import { InterstitialAdCard } from "@/components/InterstitialAdCard";
 import { useAuth } from "@/context/AuthContext";
 import { useSettingsStore } from "@/store/settingsSlice";
@@ -133,57 +132,9 @@ const logScreenView = async (screenName: string) => {
               );
             })}
           </View>
-<<<<<<< HEAD
-
-          {isLoading && <ActivityIndicator color={colors.primary} />}
-          {isError && (
-            <Text style={{ color: "red" }}>
-              Failed to load posts. Pull to refresh.
-            </Text>
-          )}
-          {!isLoading && !isError && posts.length === 0 && (
-            <Text
-              style={{
-                textAlign: "center",
-                color: colors.muted,
-                marginTop: 20,
-              }}
-            >
-              No posts available at the moment.
-            </Text>
-          )}
-
-          {posts.map((item: any, index: number) => {
-            const hasRead = item.user_claims?.some(
-              (claim: any) =>
-                claim.user_id === user.id && claim.status === "claimed"
-            );
-
-            return (
-              <InterstitialAdCard
-                key={item.title}
-                i={index}
-                adKey="news_home"
-                threshold={3}
-                id={item.id}
-                title={item.title}
-                excerpt={item.excerpt}
-                feature_image={item.feature_image}
-                feature_image_url={item.feature_image_url}
-                  created_at={item.created_at}
-                readStatus={hasRead} // 👈 send read status
-              />
-            );
-          })}
-        </View>
-      </ScrollView>
-      <AppOpenAdComponent/>
-      {/* <RewardAdButton/> */}
-=======
         </View>
       </ScrollView>
      
->>>>>>> 7db23fb (bk)
     </SafeAreaView>
   );
 }

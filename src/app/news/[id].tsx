@@ -78,11 +78,7 @@ export default function NewsDetail() {
   const hasUserClaimed = (post: any) =>
     post.user_claims?.some(
       (claim: UserClaim) =>
-<<<<<<< HEAD
-        claim.user_id === user.id && claim.status === "claimed"
-=======
         claim.user_id === user?.id && claim.status === "claimed"
->>>>>>> 7db23fb (bk)
     );
 
 
@@ -167,33 +163,6 @@ export default function NewsDetail() {
         
       </ScrollView>
 
-<<<<<<< HEAD
-      {!post.is_vip && isLoggedIn && (
-=======
-      {/* {!post.is_vip && isLoggedIn && (
->>>>>>> 7db23fb (bk)
-        <TouchableOpacity
-          style={[
-            styles.pointsButton,
-            {
-              backgroundColor: hasUserClaimed(post)
-                ? colors.textSecondary
-                : colors.primary,
-              opacity: hasUserClaimed(post) ? 0.6 : 1,
-            },
-          ]}
-          disabled={hasUserClaimed(post)}
-          onPress={() => setShowWebView(true)}
-        >
-          <Text style={[styles.pointsButtonText, { color: colors.background }]}>
-            {hasUserClaimed(post) ? "Claimed" : "Points"}
-          </Text>
-        </TouchableOpacity>
-<<<<<<< HEAD
-      )}
-=======
-      )} */}
->>>>>>> 7db23fb (bk)
       <BannerAdComponent />
 
       
@@ -238,19 +207,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pointsButton: {
-<<<<<<< HEAD
-    position: "absolute",
-    bottom: verticalScale(80),
-    right: scale(24),
-    width: scale(50),
-    height: scale(50),
-    borderRadius: scale(28),
-=======
     // Removed position: "absolute",
     // Removed bottom, right positioning
     width: scale(120),
     height: scale(35),
->>>>>>> 7db23fb (bk)
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
