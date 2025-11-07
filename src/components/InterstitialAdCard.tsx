@@ -51,24 +51,24 @@ function InterstitialAdCardBase({
   const { fetchUserVipPosts } = useVipPostStore();
 
   const handlePress = useCallback(() => {
-    // if (adKey === "vip_card" && !isLoggedIn) {
-    //   setModalVisible(true);
-    //   return;
-    // }
+    if (adKey === "vip_card" && !isLoggedIn) {
+      setModalVisible(true);
+      return;
+    }
 
-    // if (adKey === "vip_card" && isLoggedIn) {
-    //   if (purchase === 1) {
-    //     // ✅ Already purchased, go directly to detail page
-    //     router.push({
-    //       pathname: "/news/[id]",
-    //       params: { id, title, feature_image, excerpt },
-    //     });
-    //     return;
-    //   }
-    //   // Not purchased yet, ask to buy
-    //   setBuyConfirmVisible(true);
-    //   return;
-    // }
+    if (adKey === "vip_card" && isLoggedIn) {
+      if (purchase === 1) {
+        // ✅ Already purchased, go directly to detail page
+        router.push({
+          pathname: "/news/[id]",
+          params: { id, title, feature_image, excerpt },
+        });
+        return;
+      }
+      // Not purchased yet, ask to buy
+      setBuyConfirmVisible(true);
+      return;
+    }
 
     // ✅ Wait for ad to finish before navigating
     maybeShowInterstitialOnAction(adKey, threshold);
