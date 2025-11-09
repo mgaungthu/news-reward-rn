@@ -5,7 +5,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
+import React from "react";
+
 const queryClient = new QueryClient();
+
+
+
 
 export default function Layout() {
   return (

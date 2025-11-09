@@ -1,4 +1,4 @@
-import { updateUserInfo } from "@/api/authApi";
+import { deleteUser, updateUserInfo } from "@/api/authApi";
 import { Header } from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -21,7 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfile() {
   const { colors } = useTheme();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   const [name, setName] = useState(user?.name || "");
@@ -37,6 +38,30 @@ export default function EditProfile() {
     } catch (error: any) {
       console.error("Error updating profile:", error.message);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+              await deleteUser();
+              Alert.alert("Success", "Your account has been deleted.");
+              router.replace("/login");
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to delete account.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -136,6 +161,13 @@ export default function EditProfile() {
                 />
               </TouchableOpacity>
             </View>
+
+            <TouchableOpacity
+              onPress={handleDeleteAccount}
+              style={styles.deleteButton}
+            >
+              <Text style={styles.deleteButtonText}>Delete Account</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Buttons */}
@@ -209,6 +241,19 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: scale(12),
     top: verticalScale(14),
+  },
+  deleteButton: {
+    width: "100%",
+    backgroundColor: "#000",
+    borderRadius: scale(25),
+    paddingVertical: verticalScale(12),
+    marginBottom: verticalScale(20),
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "#fff",
+    fontSize: moderateScale(15),
+    fontWeight: "600",
   },
   buttonRow: {
     flexDirection: "row",

@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    padding: scale(16)
   },
   scrollView: {
     flex: 1,
@@ -189,6 +190,7 @@ const styles = StyleSheet.create({
         ? verticalScale(220)
         : verticalScale(180),
     resizeMode: "cover",
+    borderRadius:10
   },
   contentContainer: {
     padding: scale(16),

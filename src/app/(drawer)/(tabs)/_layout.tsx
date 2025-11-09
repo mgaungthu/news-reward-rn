@@ -1,8 +1,6 @@
 import mobileAds from "react-native-google-mobile-ads";
 
-import { savePushToken } from "@/api/postApi";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
-import usePushNotifications from "@/hooks/usePushNotifications";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
@@ -11,7 +9,7 @@ import { Platform, StyleSheet, View } from "react-native";
 
 function TabLayout() {
   const { colors } = useTheme();
-  const { expoPushToken } = usePushNotifications(); 
+ 
 
   
 
@@ -22,10 +20,8 @@ function TabLayout() {
       .then(() => {
         console.log("AdMob initialized successfully");
       });
-      if (expoPushToken) {
-      savePushToken(expoPushToken);
-    }
-  }, [expoPushToken]);
+     
+  }, []);
 
 
   return (
@@ -82,7 +78,7 @@ function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="vip/index"
+          name="vip"
           options={{
             title: "VIP",
             tabBarIcon: ({ color, size, focused }) => (
@@ -95,7 +91,7 @@ function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="profile/index"
+          name="profile"
           options={{
             title: "Profile",
             tabBarIcon: ({ color, size, focused }) => (

@@ -1,9 +1,4 @@
-import { getPosts } from "@/api/postApi";
-import { InterstitialAdCard } from "@/components/InterstitialAdCard";
-import { useAuth } from "@/context/AuthContext";
-import { useSettingsStore } from "@/store/settingsSlice";
-import { useTheme } from "@/theme/ThemeProvider";
-import { moderateScale, scale, verticalScale } from "@/utils/scale";
+
 import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -16,10 +11,22 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+
+
+import { getPosts } from "@/api/postApi";
+import { InterstitialAdCard } from "@/components/InterstitialAdCard";
+import { useAuth } from "@/context/AuthContext";
+import { useSettingsStore } from "@/store/settingsSlice";
+import { useTheme } from "@/theme/ThemeProvider";
+import { moderateScale, scale, verticalScale } from "@/utils/scale";
+
+import { HeaderBar } from "@/components/HeaderBar";
+
+
 
 export default  function HomePage() {
   const { colors } = useTheme();
@@ -75,15 +82,12 @@ const logScreenView = async (screenName: string) => {
           />
         }
       >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Lotaya Dinga
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.muted }]}>
-            Stay updated & earn rewards!
-          </Text>
-        </View>
-        <View style={styles.banner}>
+        
+
+        <HeaderBar title="Lotaya Dinga" subtitle="Stay updated & earn rewards!" />
+
+
+         <View style={styles.banner}>
           <Image
             source={{ uri: banner_image || "https://picsum.photos/800/400" }}
             style={styles.bannerImage}
@@ -150,11 +154,11 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(16),
   },
   title: {
-    fontSize: moderateScale(28),
+    fontSize: moderateScale(18),
     fontWeight: "700",
   },
   subtitle: {
-    fontSize: moderateScale(16),
+    fontSize: moderateScale(12),
     marginTop: verticalScale(4),
   },
   banner: {

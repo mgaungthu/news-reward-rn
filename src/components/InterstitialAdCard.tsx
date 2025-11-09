@@ -130,6 +130,8 @@ function InterstitialAdCardBase({
               style={{
                 width: "100%",
                 height: "100%",
+                borderTopLeftRadius:10,
+                borderTopRightRadius:10,
                 opacity: readStatus
                   ? 0.4
                   : adKey === "vip_card" && purchase !== 1

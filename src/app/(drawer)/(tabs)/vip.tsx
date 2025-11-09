@@ -1,22 +1,22 @@
 import { getVipPosts } from "@/api/postApi";
 import { InterstitialAdCard } from "@/components/InterstitialAdCard";
-import { TitleHeader } from "@/components/TitleHeader";
 import { useVipPostStore } from "@/store/useVipPostStore";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useQuery } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 
+import { HeaderBar } from "@/components/HeaderBar";
 import { useAuth } from "@/context/AuthContext";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import {
-  ActivityIndicator,
-  Dimensions,
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -90,11 +90,11 @@ export default function VipPosts() {
         style={{
           flex: 1,
           backgroundColor: colors.background,
-          // padding: 16,
           alignItems: "center",
         }}
       >
-        <TitleHeader title="VIP Posts" align="center" />
+        {/* <TitleHeader title="VIP Posts" align="center" /> */}
+         <HeaderBar title="VIP Posts" subtitle=" Unlock exclusive VIP posts with your points"/>
         <Text
           style={{
             fontSize: 14,
@@ -136,13 +136,9 @@ export default function VipPosts() {
           />
         }
       >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>VIP Posts</Text>
-          <Text style={[styles.subtitle, { color: colors.muted }]}>
-            Unlock exclusive VIP posts using your earned points to access
-            premium content and rewards.
-          </Text>
-        </View>
+
+
+          <HeaderBar title="VIP Posts" subtitle=" Unlock exclusive VIP posts with your points"/>
 
         <View style={[styles.section]}>
           <View style={[isIpad && styles.postsGrid]}>

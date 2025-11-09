@@ -36,3 +36,9 @@ export const getCurrentUser = async () => {
   const res = await axiosInstance.get("/me");
   return res.data;
 };
+
+
+export const deleteUser = async () => {
+  const res = await axiosInstance.delete("/user/delete");
+  return res.data;
+};

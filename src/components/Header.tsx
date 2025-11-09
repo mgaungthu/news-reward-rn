@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { scale } from "react-native-size-matters";
 
 interface HeaderProps {
   title: string;
@@ -21,8 +22,8 @@ export const Header: React.FC<HeaderProps> = ({
   const navigation = useNavigation();
   const { colors } = useTheme();
 
-  const bgColor = backgroundColor ?? colors.background;
-  const txtColor = textColor ?? colors.primary;
+  const bgColor = backgroundColor ?? colors.primary;
+  const txtColor = textColor ?? "#fff";
 
   return (
     <View
@@ -32,7 +33,9 @@ export const Header: React.FC<HeaderProps> = ({
         height: 56,
         justifyContent: "center",
         paddingHorizontal: 16,
+        borderRadius:10,
         backgroundColor: bgColor,
+        marginBottom:scale(10)
       }}
     >
       {showBack ? (
@@ -49,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
       <Text
         style={{
           flex: 1,
-          textAlign: "center",
+          // textAlign: "center",
           fontSize: 21,
           fontWeight: "500",
           color: txtColor,

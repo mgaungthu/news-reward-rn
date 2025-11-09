@@ -37,7 +37,7 @@ export default function Login() {
 
       setTimeout(() => {
         setModalVisible(false);
-        router.replace("/profile");
+        router.replace("/");
       }, 1200);
     } catch (err: any) {
       console.log(err);
@@ -58,7 +58,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, padding:scale(16) }}>
       <Header title="Login" showBack={true} />
 
       <KeyboardAvoidingView
@@ -98,6 +98,7 @@ export default function Login() {
             placeholder="Enter your email"
             placeholderTextColor={colors.textSecondary || "#999"}
             value={email}
+            autoCapitalize="none"
             onChangeText={setEmail}
             style={{
               borderBottomWidth: 1,

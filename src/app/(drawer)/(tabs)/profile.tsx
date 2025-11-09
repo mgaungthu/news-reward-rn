@@ -1,22 +1,24 @@
-import { resetUserClaims } from "@/api/postApi";
-import { useAuth } from "@/context/AuthContext";
-import { useAds } from "@/hooks/useAds";
-import { useTheme } from "@/theme/ThemeProvider";
-import { moderateScale, scale, verticalScale } from "@/utils/scale";
+
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
+  Image, RefreshControl, ScrollView, StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { resetUserClaims } from "@/api/postApi";
+import { HeaderBar } from "@/components/HeaderBar";
+import { useAuth } from "@/context/AuthContext";
+import { useAds } from "@/hooks/useAds";
+import { useTheme } from "@/theme/ThemeProvider";
+import { moderateScale, scale, verticalScale } from "@/utils/scale";
 
 export default function Profile() {
   const router = useRouter();
@@ -70,7 +72,18 @@ export default function Profile() {
 
   if (isLoggedIn) {
     return (
-      <ScrollView
+      <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: scale(16),
+      }}
+    >
+      <HeaderBar
+        title="Profile"
+        subtitle="Your profile status"
+      />
+        <ScrollView
         contentContainerStyle={[
           styles.container,
           { backgroundColor: colors.background },
@@ -79,16 +92,6 @@ export default function Profile() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../../../assets/images/logoinapp.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={[styles.slogan, { color: colors.textSecondary }]}>
-            Your Daily Source of contents
-          </Text>
-        </View>
         <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
           {/* Avatar */}
           <View style={styles.avatar}>
@@ -121,7 +124,7 @@ export default function Profile() {
                   color: colors.primary,
                 }}
               >
-                {user?.points ?? 0}
+                {Math.floor(Number(user?.points ?? 0))}
               </Text>
               <Text
                 style={{
@@ -165,6 +168,66 @@ export default function Profile() {
             </TouchableOpacity>
           </View>
 
+          {/* Referral Box */}
+          <View
+            style={{
+              width: "100%",
+              padding: scale(10),
+              borderRadius: scale(10),
+              backgroundColor: colors.cardBackground,
+              // marginBottom: verticalScale(10),
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: colors.primary,
+                marginBottom: verticalScale(8),
+              }}
+            >
+              Your Referral Link
+            </Text>
+
+            <TouchableOpacity
+              onPress={async () => {
+                const link = `https://lotaya.mandalayads.io/register?ref=${user?.referral_code}`;
+                await Clipboard.setStringAsync(link);
+                Alert.alert(
+                  "Copied!",
+                  "Your referral link has been copied to clipboard."
+                );
+              }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1,
+                borderColor: colors.primary,
+                borderRadius: scale(8),
+                paddingVertical: verticalScale(8),
+                paddingHorizontal: scale(12),
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 14,
+                  flexShrink: 1,
+                }}
+              >
+                https://lotaya.mandalayads.io/register?ref={user?.referral_code}
+              </Text>
+              <Ionicons
+                name="copy-outline"
+                size={18}
+                color={colors.primary}
+                style={{ marginLeft: scale(6) }}
+              />
+            </TouchableOpacity>
+          </View>
+
           {/* Reset Claims Button */}
           <TouchableOpacity
             onPress={async () => {
@@ -194,54 +257,74 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+    </SafeAreaView>
+      
     );
   }
 
   // 🚪 Guest View
   return (
-    <View
-      style={[styles.guestContainer, { backgroundColor: colors.background }]}
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: scale(16),
+      }}
     >
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../../../assets/images/logoinapp.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={[styles.slogan, { color: colors.textSecondary }]}>
-          Your Daily Source of contents
-        </Text>
-      </View>
-      <Text style={styles.guestTitle}>Guest Profile</Text>
-      <View style={styles.guestMessageWrapper}>
-        <Text style={[styles.guestMessage, { color: colors.textSecondary }]}>
-          You are not logged in. Please sign in or register to access your
-          profile.
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        onPress={() => router.push("/login")}
-        style={[styles.guestButtonPrimary, { backgroundColor: colors.primary }]}
+      <HeaderBar
+        title="Sign in"
+        subtitle=" Get in and get points"
+      />
+      <View
+        style={[styles.guestContainer, { backgroundColor: colors.background }]}
       >
-        <Text
-          style={[styles.guestButtonTextPrimary, { color: colors.background }]}
-        >
-          Login
-        </Text>
-      </TouchableOpacity>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../../../assets/images/logoinapp.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={[styles.slogan, { color: colors.textSecondary }]}>
+            Your Daily Source of contents
+          </Text>
+        </View>
+        <Text style={styles.guestTitle}>Guest Profile</Text>
+        <View style={styles.guestMessageWrapper}>
+          <Text style={[styles.guestMessage, { color: colors.textSecondary }]}>
+            You are not logged in. Please sign in or register to access your
+            profile.
+          </Text>
+        </View>
 
-      <TouchableOpacity
-        onPress={() => router.push("/register")}
-        style={[styles.guestButtonSecondary, { borderColor: colors.primary }]}
-      >
-        <Text
-          style={[styles.guestButtonTextSecondary, { color: colors.primary }]}
+        <TouchableOpacity
+          onPress={() => router.push("/login")}
+          style={[
+            styles.guestButtonPrimary,
+            { backgroundColor: colors.primary },
+          ]}
         >
-          Register
-        </Text>
-      </TouchableOpacity>
-    </View>
+          <Text
+            style={[
+              styles.guestButtonTextPrimary,
+              { color: colors.background },
+            ]}
+          >
+            Login
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/register")}
+          style={[styles.guestButtonSecondary, { borderColor: colors.primary }]}
+        >
+          <Text
+            style={[styles.guestButtonTextSecondary, { color: colors.primary }]}
+          >
+            Register
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -249,14 +332,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: scale(20),
-    justifyContent: "center",
     alignItems: "center",
   },
   card: {
     width: "100%",
     maxWidth: scale(400),
     borderRadius: scale(16),
-    paddingVertical: verticalScale(30),
+    paddingVertical: verticalScale(10),
     paddingHorizontal: scale(20),
     alignItems: "center",
   },
@@ -282,7 +364,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginBottom: verticalScale(20),
+    // marginBottom: verticalScale(10),
     paddingHorizontal: scale(10),
   },
   statsItem: {
@@ -290,7 +372,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoutButton: {
-    marginTop: verticalScale(30),
+    marginTop: verticalScale(10),
     paddingVertical: verticalScale(12),
     paddingHorizontal: scale(60),
     borderRadius: scale(30),
@@ -302,7 +384,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   resetButton: {
-    marginTop: verticalScale(20),
+    marginTop: verticalScale(15),
     paddingVertical: verticalScale(12),
     paddingHorizontal: scale(60),
     borderRadius: scale(30),
@@ -315,9 +397,8 @@ const styles = StyleSheet.create({
   },
   guestContainer: {
     flex: 1,
-    justifyContent: "center",
+    marginTop:scale(80),
     alignItems: "center",
-    padding: scale(20),
   },
   guestTitle: {
     fontSize: moderateScale(22),
@@ -354,7 +435,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginBottom: verticalScale(20),
+    marginBottom: verticalScale(10),
   },
   logo: {
     width: scale(100),
