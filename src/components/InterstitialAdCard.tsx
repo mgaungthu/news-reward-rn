@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router"; // 👈 Add this
 import React, { memo, useCallback } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { scale } from "react-native-size-matters";
 import { CustomModal } from "./CustomModal";
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
   excerpt?: string;
   key?: string;
   purchase?: number;
+  required_points?:number;
   readStatus?: boolean; 
   created_at?: string;
 };
@@ -36,13 +38,14 @@ function InterstitialAdCardBase({
   title = `Breaking News Headline ${i}`,
   excerpt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   purchase,
+  required_points=0,
   readStatus, // 👈 add this
     created_at,
 }: Props) {
   const { maybeShowInterstitialOnAction } = useAds();
   const { colors } = useTheme();
   const router = useRouter(); // 👈 for navigation
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn , getUser} = useAuth();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [buyModalVisible, setBuyModalVisible] = React.useState(false);
   const [buyMessage, setBuyMessage] = React.useState("");
@@ -100,7 +103,7 @@ function InterstitialAdCardBase({
       } else {
         setBuyMessage(SUCCESS_MESSAGES.VIP_PURCHASE_SUCCESS);
       }
-
+      getUser();
       fetchUserVipPosts();
     } catch (error: any) {
       const message = handleApiError(error);
@@ -168,10 +171,16 @@ function InterstitialAdCardBase({
           <Text style={[styles.title, { color: colors.text ?? "#111" }]}>
             {title}
           </Text>
-
-          <Text style={[styles.excerpt, { color: colors.muted ?? "#666" }]}>
-            {excerpt}
-          </Text>
+          {adKey === "vip_card" && (
+            <Text
+              style={[
+                styles.requirePoint,
+                { color: colors.primary ?? "#EC3E38" },
+              ]}
+            >
+             {required_points ?? 0} Points
+            </Text>
+          )}
         </View>
       </Pressable>
       <CustomModal
@@ -265,6 +274,12 @@ const styles = StyleSheet.create({
   excerpt: {
     marginTop: 4,
     fontSize: 13,
+  },
+  requirePoint: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign:'right',
+    marginTop:scale(10)
   },
   button: {
     padding: 10,

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mandalayads.lotayadinga",
+      "sha256_cert_fingerprints": [
+        "85:C1:DB:7A:0B:54:A7:39:C9:50:5B:CD:CC:FA:7E:48:E7:BD:40:C5:E0:93:93:76:D4:54:88:CB:41:E2:A3:8B"
+      ]
+    }
+  }
+]

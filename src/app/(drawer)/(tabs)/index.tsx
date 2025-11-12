@@ -1,5 +1,6 @@
 
 import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
+import { useIsFocused } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
@@ -39,6 +40,8 @@ export default  function HomePage() {
   const { fetchSettings, banner_image } = useSettingsStore();
 
   const [refreshing, setRefreshing] = useState(false);
+  const isFocused = useIsFocused();
+
 
 
 const logScreenView = async (screenName: string) => {
@@ -50,10 +53,12 @@ const logScreenView = async (screenName: string) => {
 };
 
   useEffect(() => {
-    fetchSettings();
-    refetch();
-    logScreenView('home');
-  }, []);
+    if (isFocused) {
+      refetch();
+      fetchSettings();
+      logScreenView('home');
+    }
+  }, [isFocused]);
 
   const onRefresh = async () => {
     setRefreshing(true);

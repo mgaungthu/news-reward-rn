@@ -15,48 +15,78 @@ type TabScreen = "index" | "vip" | "profile";
 
 function CustomDrawer(props: DrawerContentComponentProps) {
   const { colors } = useTheme();
-  const { user, logout } = useAuth();
-  const activeTab = useNavigationState((state) => {
+  const { user, logout, isLoggedIn } = useAuth();
+  const { activeRouteName, activeTab } = useNavigationState((state) => {
     const activeRoute = state.routes[state.index];
     const nestedState = activeRoute.state as NavigationState | undefined;
+    let tab: TabScreen = "index";
     if (activeRoute.name === "(tabs)" && nestedState) {
       const nestedRoute = nestedState.routes[nestedState.index];
-      return (nestedRoute?.name as TabScreen) ?? "index";
+      tab = (nestedRoute?.name as TabScreen) ?? "index";
     }
-    return "index";
+    return { activeRouteName: activeRoute.name, activeTab: tab };
   });
 
   const navigateToTab = (screen: TabScreen) => {
-    props.navigation.navigate("(tabs)" as never, { screen } as never);
+      props.navigation.navigate("(tabs)", { screen });
     props.navigation.closeDrawer();
   };
 
   type IconName = ComponentProps<typeof Ionicons>["name"];
-  const menuItems = useMemo(
-    () =>
-      [
-        {
-          label: "Home",
-          icon: "home-outline" as IconName,
-          screen: "index" as TabScreen,
-        },
-        {
-          label: "VIP Zone",
-          icon: "star-outline" as IconName,
-          screen: "vip" as TabScreen,
-        },
-        {
-          label: "Profile",
-          icon: "person-outline" as IconName,
-          screen: "profile" as TabScreen,
-        },
-      ].map((item) => ({
-        ...item,
-        focused: activeTab === item.screen,
-        onPress: () => navigateToTab(item.screen),
-      })),
-    [activeTab]
+  type MenuItem =
+    | {
+        label: string;
+        icon: IconName;
+        type: "tab";
+        screen: TabScreen;
+      }
+    | {
+        label: string;
+        icon: IconName;
+        type: "route";
+        routeName: string;
+      };
+
+  const menuItems = useMemo<MenuItem[]>(
+    () => [
+      {
+        label: "Home",
+        icon: "home-outline",
+        type: "tab",
+        screen: "index",
+      },
+      {
+        label: "VIP Zone",
+        icon: "star-outline",
+        type: "tab",
+        screen: "vip",
+      },
+      {
+        label: "Profile",
+        icon: "person-outline",
+        type: "tab",
+        screen: "profile",
+      },
+      {
+        label: "Privacy Policy",
+        icon: "document-text-outline",
+        type: "route",
+        routeName: "privacy",
+      },
+      {
+        label: "Terms of Use",
+        icon: "reader-outline",
+        type: "route",
+        routeName: "terms",
+      },
+    ],
+    []
   );
+
+  const handleLogout = async () => {
+  await logout();
+  props.navigation.navigate("(tabs)", { screen: "profile" });
+};
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -67,11 +97,7 @@ function CustomDrawer(props: DrawerContentComponentProps) {
         {/* User Info */}
         <View style={styles.header}>
           <Image
-            source={{
-              uri:
-                user?.avatar ||
-                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-            }}
+            source={require('../../../assets/images/logoinapp.png')}
             style={styles.avatar}
           />
           <Text style={[styles.name, { color: "#000" }]}>
@@ -84,41 +110,67 @@ function CustomDrawer(props: DrawerContentComponentProps) {
 
         {/* Drawer Items */}
         <View style={{ flex: 1, paddingTop: 10 }}>
-          {menuItems.map((item) => (
-            <DrawerItem
-              key={item.label}
-              label={item.label}
-              focused={item.focused}
-              activeTintColor="#fff"
-              inactiveTintColor={colors.text}
-              activeBackgroundColor={colors.primary}
-              icon={({ color, size }) => (
-                <Ionicons
-                  name={item.icon}
-                  size={size}
-                  color={item.focused ? "#fff" : color}
-                />
-              )}
-              labelStyle={{
-                fontSize: 14,
-                fontWeight: "500",
-                color: item.focused ? "#fff" : colors.text,
-              }}
-              style={{ borderRadius: 18, marginHorizontal: 12 }}
-              onPress={item.onPress}
-            />
-          ))}
+          {menuItems.map((item) => {
+            const focused =
+              item.type === "tab"
+                ? activeRouteName === "(tabs)" && activeTab === item.screen
+                : activeRouteName === item.routeName;
+
+            const handlePress = () => {
+              if (item.type === "tab") {
+                navigateToTab(item.screen);
+              } else {
+                props.navigation.navigate(item.routeName as never);
+                props.navigation.closeDrawer();
+              }
+            };
+
+            return (
+              <DrawerItem
+                key={item.label}
+                label={item.label}
+                focused={focused}
+                activeTintColor="#fff"
+                inactiveTintColor={colors.text}
+                activeBackgroundColor={colors.primary}
+                icon={({ color, size }) => (
+                  <Ionicons
+                    name={item.icon}
+                    size={size}
+                    color={focused ? "#fff" : color}
+                  />
+                )}
+                labelStyle={{
+                  fontSize: 14,
+                  fontWeight: "500",
+                  color: focused ? "#fff" : colors.text,
+                }}
+                style={{ borderRadius: 18, marginHorizontal: 12 }}
+                onPress={handlePress}
+              />
+            );
+          })}
         </View>
       </DrawerContentScrollView>
 
-      {/* Logout Button */}
-      <TouchableOpacity
-        style={[styles.logoutButton, { backgroundColor: colors.primary }]}
-        onPress={logout}
-      >
-        <Ionicons name="log-out-outline" size={20} color="#fff" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      {/* Logout/Sign in Button */}
+      {isLoggedIn ? (
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: colors.primary }]}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={20} color="#fff" />
+          <Text style={styles.logoutText}>Sign out</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: colors.primary }]}
+          onPress={() => props.navigation.navigate("login" as never)}
+        >
+          <Ionicons name="log-in-outline" size={20} color="#fff" />
+          <Text style={styles.logoutText}>Sign in</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -152,6 +204,24 @@ export default function Layout() {
           ),
         }}
       />
+      <Drawer.Screen
+        name="privacy"
+        options={{
+          drawerLabel: "Privacy Policy",
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="document-text-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="terms"
+        options={{
+          drawerLabel: "Terms of Use",
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="reader-outline" size={size} color={color} />
+          ),
+        }}
+      />
     </Drawer>
   );
 }
@@ -166,8 +236,8 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
   },
   avatar: {
-    width: 70,
-    height: 70,
+    width: 90,
+    height: 90,
     borderRadius: 35,
     marginBottom: 10,
   },

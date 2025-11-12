@@ -8,7 +8,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,7 +15,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -76,28 +75,12 @@ export default function EditProfile() {
           contentContainerStyle={{
             alignItems: "center",
             paddingBottom: verticalScale(40),
+            padding:scale(16)
           }}
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
           <Header title="Edit Profile" showBack />
-
-          {/* Avatar Preview */}
-          <View
-            style={[
-              styles.avatarContainer,
-              { backgroundColor: colors.cardBackground },
-            ]}
-          >
-            <Image
-              source={{
-                uri:
-                  user?.avatar ||
-                  "https://cdn-icons-png.flaticon.com/512/147/147142.png",
-              }}
-              style={styles.avatar}
-            />
-          </View>
 
           {/* Input Fields */}
           <View style={styles.form}>
@@ -132,7 +115,7 @@ export default function EditProfile() {
 
             {/* Password Confirmation */}
             <Text style={[styles.label, { color: colors.textSecondary }]}>
-              Current Password
+              Updated Password
             </Text>
             <View style={styles.passwordWrapper}>
               <TextInput
@@ -146,7 +129,7 @@ export default function EditProfile() {
                 ]}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Enter your password"
+                placeholder="Enter new password"
                 placeholderTextColor={colors.textSecondary}
                 secureTextEntry={!showPassword}
               />
@@ -218,6 +201,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "90%",
+    marginTop:scale(10)
   },
   label: {
     fontSize: moderateScale(13),

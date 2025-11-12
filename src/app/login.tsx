@@ -1,3 +1,4 @@
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { CustomModal } from "@/components/CustomModal";
 import { Header } from "@/components/Header";
 import { ERROR_MESSAGES } from "@/constants/messages";
@@ -58,31 +59,39 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, padding:scale(16) }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: scale(16),
+      }}
+    >
       <Header title="Login" showBack={true} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
+        <View style={{ alignItems: "center" }}>
+          <Image
+            source={require("../../assets/images/logoinapp.png")}
+            style={{
+              width: scale(120),
+              height: verticalScale(120),
+              resizeMode: "contain",
+            }}
+          />
+        </View>
         <View
           style={{
             flex: 1,
             justifyContent: "center",
-            paddingHorizontal: Platform.OS === "ios" && (Platform as any).isPad ? scale(60) : scale(24),
+            paddingHorizontal:
+              Platform.OS === "ios" && (Platform as any).isPad
+                ? scale(60)
+                : scale(24),
           }}
         >
-          <View style={{ alignItems: "center" }}>
-            <Image
-              source={require("../../assets/images/logoinapp.png")}
-              style={{
-                width: scale(120),
-                height: verticalScale(120),
-                resizeMode: "contain",
-              }}
-            />
-          </View>
-
           <Text
             style={{
               textAlign: "center",
@@ -125,6 +134,18 @@ export default function Login() {
           />
 
           <TouchableOpacity
+            onPress={() => router.push("/forgot-password")}
+            style={{
+              alignSelf: "flex-end",
+              marginBottom: verticalScale(20),
+            }}
+          >
+            <Text style={{ color: colors.primary, fontWeight: "500" }}>
+              Forgot password?
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             onPress={handleLogin}
             style={{
               backgroundColor: colors.primary,
@@ -134,7 +155,7 @@ export default function Login() {
             }}
           >
             <Text style={{ color: colors.background, fontWeight: "600" }}>
-              Login
+              Sign In
             </Text>
           </TouchableOpacity>
 
@@ -145,6 +166,7 @@ export default function Login() {
             <Text>Don't have an account? Register</Text>
           </TouchableOpacity>
         </View>
+        <BannerAdComponent/>
       </KeyboardAvoidingView>
 
       <CustomModal

@@ -14,6 +14,7 @@ export interface SettingsState {
   banner_image: string;
   android_app_id: string;
   ios_app_id: string;
+  email:string;
   loading: boolean;
   error: string | null;
   fetchSettings: () => Promise<void>;
@@ -32,6 +33,7 @@ export const useSettingsStore = create<SettingsState>()(
       banner_image: "",
       android_app_id: "",
       ios_app_id: "",
+      email:"",
       loading: false,
       error: null,
       fetchSettings: async () => {

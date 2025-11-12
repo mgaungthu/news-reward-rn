@@ -190,7 +190,8 @@ const styles = StyleSheet.create({
         ? verticalScale(220)
         : verticalScale(180),
     resizeMode: "cover",
-    borderRadius:10
+    borderRadius:10,
+    marginTop:scale(10)
   },
   contentContainer: {
     padding: scale(16),

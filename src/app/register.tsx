@@ -1,10 +1,12 @@
 import { registerUser } from "@/api/authApi";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { CustomModal } from "@/components/CustomModal";
 import { Header } from "@/components/Header";
 import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -12,7 +14,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,13 +24,33 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"success" | "error" | null>(null);
   const [modalMessage, setModalMessage] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const params = useLocalSearchParams<{ ref?: string }>();
+
+  useEffect(() => {
+    if (params.ref?.length) {
+      setReferralCode((prev) => prev || params.ref!.toUpperCase());
+    }
+  }, [params.ref]);
 
   const handleRegister = async () => {
+    if (!acceptedTerms) {
+      setModalType("error");
+      setModalMessage("Please accept the Terms of Use and Privacy Policy.");
+      setModalVisible(true);
+      return;
+    }
     try {
-      await registerUser({ name, email, password });
+      await registerUser({
+        name,
+        email,
+        password,
+        referral_code: referralCode.trim() || undefined,
+      });
       setModalType("success");
       setModalMessage("Registration successful!");
       setModalVisible(true);
@@ -44,23 +66,38 @@ export default function Register() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background , padding:scale(16)}}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: scale(16),
+      }}
+    >
       <Header title="Register" showBack={true} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View style={{ flex: 1, justifyContent: "center",  paddingHorizontal: Platform.OS === "ios" && (Platform as any).isPad ? scale(60) : scale(24), }}>
-          <View style={{ alignItems: "center" }}>
-            <Image
-              source={require("../../assets/images/logoinapp.png")}
-              style={{
-                width: scale(120),
-                height: verticalScale(120),
-                resizeMode: "contain",
-              }}
-            />
-          </View>
+        <View style={{ alignItems: "center" }}>
+          <Image
+            source={require("../../assets/images/logoinapp.png")}
+            style={{
+              width: scale(120),
+              height: verticalScale(120),
+              resizeMode: "contain",
+            }}
+          />
+        </View>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            paddingHorizontal:
+              Platform.OS === "ios" && (Platform as any).isPad
+                ? scale(60)
+                : scale(24),
+          }}
+        >
           <Text
             style={{
               fontSize: moderateScale(24),
@@ -113,6 +150,61 @@ export default function Register() {
             }}
           />
 
+          <TextInput
+            placeholder="Referral code (optional)"
+            placeholderTextColor={colors.textSecondary || "#999"}
+            value={referralCode}
+            onChangeText={setReferralCode}
+            autoCapitalize="characters"
+            style={{
+              borderBottomWidth: 1,
+              borderColor: colors.border,
+              marginBottom: verticalScale(20),
+              paddingVertical: verticalScale(10),
+              color: colors.text,
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={() => setAcceptedTerms((prev) => !prev)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: verticalScale(20),
+              gap: scale(8),
+            }}
+          >
+            <Ionicons
+              name={acceptedTerms ? "checkbox" : "square-outline"}
+              size={moderateScale(20)}
+              color={acceptedTerms ? colors.primary : colors.textSecondary}
+            />
+            <Text
+              style={{
+                flex: 1,
+                color: colors.textSecondary,
+                fontSize: scale(11),
+              }}
+            >
+              I agree to the
+              <Text
+                style={{ color: colors.primary, fontWeight: "600" }}
+                onPress={() => router.push("/terms")}
+              >
+                {" "}
+                Terms of Use
+              </Text>{" "}
+              and
+              <Text
+                style={{ color: colors.primary, fontWeight: "600" }}
+                onPress={() => router.push("/privacy")}
+              >
+                {" "}
+                Privacy Policy
+              </Text>
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={handleRegister}
             style={{
@@ -134,6 +226,8 @@ export default function Register() {
             <Text>Already have an account? Login</Text>
           </TouchableOpacity>
         </View>
+
+        <BannerAdComponent />
       </KeyboardAvoidingView>
       <CustomModal
         visible={modalVisible}

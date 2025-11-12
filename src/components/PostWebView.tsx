@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -34,7 +35,8 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
   
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1}}>
+      <View style={{padding:scale(16)}}>
       <Header
         title={
           post.title?.length > 30
@@ -43,6 +45,7 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
         }
         showBack
       />
+      </View>
       <BannerAdComponent />
 
       <WebView

@@ -9,20 +9,22 @@ import { HeaderBar } from "@/components/HeaderBar";
 import { useAuth } from "@/context/AuthContext";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import {
-    ActivityIndicator,
-    Dimensions,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  Switch,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VipPosts() {
   const { colors } = useTheme();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [showPurchasedOnly, setShowPurchasedOnly] = React.useState(false);
 
   const {
     data: vipPosts = [],
@@ -39,7 +41,7 @@ export default function VipPosts() {
 
   const { vipPurchasePosts, loading, fetchUserVipPosts } = useVipPostStore();
 
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
     getUserPurchaseList();
@@ -52,12 +54,20 @@ export default function VipPosts() {
     return;
   };
 
-  console.log()
+  
 
   const mergedVipPosts = vipPosts.map((post: any) => {
     const purchased = vipPurchasePosts.some((p: any) => p.id === post.id);
     return { ...post, purchased: purchased ? 1 : 0 };
   });
+
+  const filteredVipPosts = showPurchasedOnly
+    ? mergedVipPosts.filter((post: any) => post.purchased)
+    : mergedVipPosts;
+
+  const emptyStateMessage = showPurchasedOnly
+    ? "You haven't purchased any VIP posts yet."
+    : "No posts available at the moment.";
 
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
@@ -94,7 +104,10 @@ export default function VipPosts() {
         }}
       >
         {/* <TitleHeader title="VIP Posts" align="center" /> */}
-         <HeaderBar title="VIP Posts" subtitle=" Unlock exclusive VIP posts with your points"/>
+        <HeaderBar
+          title="VIP Posts"
+          subtitle=" Unlock exclusive VIP posts with your points"
+        />
         <Text
           style={{
             fontSize: 14,
@@ -136,9 +149,58 @@ export default function VipPosts() {
           />
         }
       >
-
-
-          <HeaderBar title="VIP Posts" subtitle=" Unlock exclusive VIP posts with your points"/>
+        <HeaderBar
+          title="VIP Posts"
+          subtitle=" Unlock exclusive VIP posts with your points"
+        />
+        {user && (
+          <View style={[styles.balanceRow]}>
+            <Text
+              style={{
+                fontSize: moderateScale(16),
+              }}
+            >
+              <Text style={{ color: colors.text }}>Balance: </Text>
+              <Text style={{ color: colors.primary }}>{user.points ?? 0}</Text>
+              <Text style={{ color: colors.text }}> points </Text>
+            </Text>
+            <View style={styles.switchGroup}>
+              <Text
+                style={[
+                  styles.switchLabel,
+                  {
+                    color: !showPurchasedOnly
+                      ? colors.primary
+                      : colors.textSecondary || colors.muted || colors.text,
+                  },
+                ]}
+              >
+                All
+              </Text>
+              <Switch
+                value={showPurchasedOnly}
+                onValueChange={setShowPurchasedOnly}
+                trackColor={{
+                  false: colors.border || "#d3d3d3",
+                  true: colors.primary,
+                }}
+                ios_backgroundColor={colors.border || "#d3d3d3"}
+              />
+              <Text
+                style={[
+                  styles.switchLabel,
+                  {
+                    color: showPurchasedOnly
+                      ? colors.primary
+                      : colors.textSecondary || colors.muted || colors.text,
+                  },
+                ]}
+              >
+                Buy
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={[styles.section]}>
           <View style={[isIpad && styles.postsGrid]}>
@@ -148,7 +210,7 @@ export default function VipPosts() {
                 Failed to load posts. Pull to refresh.
               </Text>
             )}
-            {!isLoading && !isError && mergedVipPosts.length === 0 && (
+            {!isLoading && !isError && filteredVipPosts.length === 0 && (
               <Text
                 style={{
                   textAlign: "center",
@@ -156,10 +218,10 @@ export default function VipPosts() {
                   marginTop: 20,
                 }}
               >
-                No posts available at the moment.
+                {emptyStateMessage}
               </Text>
             )}
-            {mergedVipPosts.map((post: any, i: number) => (
+            {filteredVipPosts.map((post: any, i: number) => (
               <View key={post.id} style={[isIpad && styles.cardWrapper]}>
                 <InterstitialAdCard
                   i={i}
@@ -169,6 +231,7 @@ export default function VipPosts() {
                   feature_image={post.feature_image}
                   feature_image_url={post.feature_image_url}
                   purchase={post.purchased}
+                  required_points={post.required_points}
                   adKey="vip_card"
                   threshold={3}
                 />
@@ -190,17 +253,32 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: verticalScale(16),
-    
   },
   title: {
     fontSize: moderateScale(28),
     fontWeight: "700",
-    textAlign:'center'
+    textAlign: "center",
   },
   subtitle: {
     fontSize: moderateScale(16),
     marginTop: verticalScale(4),
-    textAlign:'center'
+    textAlign: "center",
+  },
+  balanceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: scale(10),
+  },
+  switchGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: scale(12),
+  },
+  switchLabel: {
+    fontSize: moderateScale(14),
+    fontWeight: "600",
+    marginHorizontal: scale(6),
   },
   section: {
     marginBottom: verticalScale(24),

@@ -48,7 +48,6 @@
       "bundleIdentifier": "com.mandalayads.lotayadinga",
       "infoPlist": {
         "UIBackgroundModes": [
-          "remote-notification",
           "remote-notification"
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -58,6 +57,7 @@
       }
     },
     "android": {
+      "versionCode": 12,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",

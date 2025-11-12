@@ -96,11 +96,7 @@ export default function Profile() {
           {/* Avatar */}
           <View style={styles.avatar}>
             <Image
-              source={{
-                uri:
-                  user?.avatar ||
-                  "https://cdn-icons-png.flaticon.com/512/147/147142.png",
-              }}
+              source={require('../../../../assets/images/logoinapp.png')}
               style={{ width: "100%", height: "100%" }}
               resizeMode="cover"
             />
@@ -272,8 +268,8 @@ export default function Profile() {
       }}
     >
       <HeaderBar
-        title="Sign in"
-        subtitle=" Get in and get points"
+        title="Guest Profile"
+        subtitle=" Sign in, get points and explore "
       />
       <View
         style={[styles.guestContainer, { backgroundColor: colors.background }]}
@@ -309,7 +305,7 @@ export default function Profile() {
               { color: colors.background },
             ]}
           >
-            Login
+            Sign in
           </Text>
         </TouchableOpacity>
 
@@ -385,8 +381,8 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     marginTop: verticalScale(15),
-    paddingVertical: verticalScale(12),
-    paddingHorizontal: scale(60),
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: scale(55),
     borderRadius: scale(30),
     alignSelf: "center",
   },

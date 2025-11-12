@@ -1,8 +1,9 @@
 import { useTheme } from "@/theme/ThemeProvider";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { scale } from "react-native-size-matters";
 
@@ -19,8 +20,17 @@ export const Header: React.FC<HeaderProps> = ({
   backgroundColor,
   textColor,
 }) => {
-  const navigation = useNavigation();
+
+  const [cameFromRef,setCameFromRef]= useState(false)
+  const router = useRouter();
   const { colors } = useTheme();
+    const params = useLocalSearchParams<{ ref?: string }>();
+  
+    useEffect(() => {
+        if (params.ref?.length) {
+          setCameFromRef(true);
+        }
+    }, [params.ref]);
 
   const bgColor = backgroundColor ?? colors.primary;
   const txtColor = textColor ?? "#fff";
@@ -40,7 +50,13 @@ export const Header: React.FC<HeaderProps> = ({
     >
       {showBack ? (
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (cameFromRef) {
+              router.replace("/"); // redirect to home if referral
+            } else {
+              router.back(); // normal back navigation
+            }
+          }}
           style={{ justifyContent: "center", height: "100%", width: 40 }}
         >
           <Ionicons name="arrow-back" size={24} color={txtColor} />
