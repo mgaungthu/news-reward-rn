@@ -1,10 +1,12 @@
-import { createAds } from "@/utils/lib";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AdEventType,
   RewardedAdEventType,
 } from "react-native-google-mobile-ads";
+
+import { createAds } from "@/utils/lib";
 
 
 // ---------- Storage & Rules ----------
@@ -161,16 +163,21 @@ export function useAds() {
   // Show interstitial every N actions (default 5)
   const maybeShowInterstitialOnAction = useCallback(
     (key: string, threshold = DEFAULT_INTERSTITIAL_THRESHOLD) => {
+      // Prevent crash when interstitial is null (no ad ID or not created)
+      if (!interstitial) {
+        console.log("[GAM] No interstitial available — skipping show");
+        return;
+      }
       const counters = countersRef.current;
       counters[key] = (counters[key] ?? 0) + 1;
 
       if (counters[key] % threshold === 0) {
-        if (interstitialLoaded && interstitial) {
+        if (interstitialLoaded && interstitial?.loaded) {
           interstitial.show();
         } else {
           // ✅ remember to show once LOADED
           pendingInterstitialShowRef.current = true;
-          if (!loadingInterstitialRef.current && interstitial) {
+          if (!loadingInterstitialRef.current && interstitial?.load) {
             loadingInterstitialRef.current = true;
             interstitial.load();
           }

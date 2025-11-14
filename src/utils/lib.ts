@@ -1,4 +1,6 @@
 import { useSettingsStore } from "@/store/settingsSlice";
+import * as Device from "expo-device";
+import { Dimensions, Platform } from "react-native";
 import {
   InterstitialAd,
   RewardedAd
@@ -18,13 +20,38 @@ export const createAds = () => {
 
   console.log('[GAM] Loaded Ad IDs:', ad_interstitial_id, ad_reward_id);
 
-  const interstitial = InterstitialAd.createForAdRequest(ad_interstitial_id, {
-    requestNonPersonalizedAdsOnly: true,
-  });
+  // Individual null checks
+  const interstitial = ad_interstitial_id
+    ? InterstitialAd.createForAdRequest(ad_interstitial_id, {
+        requestNonPersonalizedAdsOnly: true,
+      })
+    : null;
 
-  const rewarded = RewardedAd.createForAdRequest(ad_reward_id, {
-    requestNonPersonalizedAdsOnly: true,
-  });
+  const rewarded = ad_reward_id
+    ? RewardedAd.createForAdRequest(ad_reward_id, {
+        requestNonPersonalizedAdsOnly: true,
+      })
+    : null;
+
+  if (!ad_interstitial_id) {
+    console.log("[GAM] No interstitial ID — interstitial disabled");
+  }
+
+  if (!ad_reward_id) {
+    console.log("[GAM] No reward ID — rewarded ad disabled");
+  }
 
   return { interstitial, rewarded };
 };
+
+
+export function isTablet() {
+  const { width } = Dimensions.get("window");
+
+  // iPad or Android tablet
+  const isIpad =
+    (Platform.OS === "ios" && width >= 768) ||
+    Device.deviceType === Device.DeviceType.TABLET;
+
+  return isIpad;
+}

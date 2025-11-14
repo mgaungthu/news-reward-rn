@@ -1,10 +1,10 @@
 import React from 'react'
 import { Text, View } from 'react-native'
 
-const News = () => {
+const Posts = () => {
   return (
     <View><Text>news</Text></View>
   )
 }
 
-export default News
+export default Posts

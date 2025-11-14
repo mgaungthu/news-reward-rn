@@ -1,8 +1,10 @@
-import axiosInstance from "@/api/axiosInstance";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+import axiosInstance from "@/api/axiosInstance";
+
 
 export interface SettingsState {
   points_per_claim: string;

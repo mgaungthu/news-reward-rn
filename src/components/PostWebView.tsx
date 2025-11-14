@@ -84,10 +84,9 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
         onPress={async () => {
           if (isClaimEnabled) {
             try {
-              await claimPostReward(post.id);
-              const updatedUser = await getUser();
+              const res = await claimPostReward(post.id);
               setModalType("success");
-              setModalMessage(`Claim successful!\n\nYour total point is now ${updatedUser.points}`);
+              setModalMessage(`Claim successful!\n\nYour total point is now ${Math.floor(Number(res.user_points ?? 0))}`);
               setModalVisible(true);
               setIsClaimEnabled(false);
             } catch (e) {

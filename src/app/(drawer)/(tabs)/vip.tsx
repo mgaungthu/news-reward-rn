@@ -15,8 +15,8 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   Switch,
+  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -54,8 +54,6 @@ export default function VipPosts() {
     return;
   };
 
-  
-
   const mergedVipPosts = vipPosts.map((post: any) => {
     const purchased = vipPurchasePosts.some((p: any) => p.id === post.id);
     return { ...post, purchased: purchased ? 1 : 0 };
@@ -81,16 +79,26 @@ export default function VipPosts() {
 
   if (isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.background,
-        }}
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
       >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+        <View style={{flex:1,paddingHorizontal: scale(16)}}>
+        <HeaderBar
+          title="VIP Posts"
+          subtitle=" Unlock exclusive VIP posts with your points"
+        />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.background,
+          }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -148,6 +156,8 @@ export default function VipPosts() {
             tintColor={colors.primary}
           />
         }
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       >
         <HeaderBar
           title="VIP Posts"
@@ -161,7 +171,10 @@ export default function VipPosts() {
               }}
             >
               <Text style={{ color: colors.text }}>Balance: </Text>
-              <Text style={{ color: colors.primary }}>{user.points ?? 0}</Text>
+
+              <Text style={{ color: colors.primary }}>
+                {Math.floor(Number(user?.points ?? 0))}
+              </Text>
               <Text style={{ color: colors.text }}> points </Text>
             </Text>
             <View style={styles.switchGroup}>
@@ -231,8 +244,10 @@ export default function VipPosts() {
                   feature_image={post.feature_image}
                   feature_image_url={post.feature_image_url}
                   purchase={post.purchased}
+                  created_at={post.created_at}
                   required_points={post.required_points}
                   adKey="vip_card"
+                  is_vip={post.is_vip}
                   threshold={3}
                 />
               </View>

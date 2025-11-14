@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { ERROR_MESSAGES } from "@/constants/messages";
 import { useSettingsStore } from "@/store/settingsSlice";
 import { useTheme } from "@/theme/ThemeProvider";
+import { isTablet } from "@/utils/lib";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -69,7 +70,7 @@ export default function ForgotPassword() {
             flex: 1,
             justifyContent: "center",
             paddingHorizontal:
-              Platform.OS === "ios" && (Platform as any).isPad ? scale(60) : scale(24),
+              isTablet() ? scale(60) : scale(24),
             gap: verticalScale(16),
           }}
         >

@@ -3,6 +3,7 @@ import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { CustomModal } from "@/components/CustomModal";
 import { Header } from "@/components/Header";
 import { useTheme } from "@/theme/ThemeProvider";
+import { isTablet } from "@/utils/lib";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -93,7 +94,7 @@ export default function Register() {
             flex: 1,
             justifyContent: "center",
             paddingHorizontal:
-              Platform.OS === "ios" && (Platform as any).isPad
+              isTablet()
                 ? scale(60)
                 : scale(24),
           }}

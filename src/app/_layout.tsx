@@ -1,17 +1,25 @@
-import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
-import { AuthProvider } from "@/context/AuthContext";
-import { ThemeProvider } from "@/theme/ThemeProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
-import { Stack, useRouter } from "expo-router";
+import { SplashScreen, Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
+
+import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
+import SecondSplash from "@/components/SecondSplash";
+import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/theme/ThemeProvider";
+
+
 
 const queryClient = new QueryClient();
 
 export default function Layout() {
   const router = useRouter();
   const lastUrlRef = useRef<string | null>(null);
+
+    const [showSecondSplash, setShowSecondSplash] = useState(true);
+
 
   const navigateToUrl = useCallback(
     (url: string | null | undefined) => {
@@ -49,30 +57,43 @@ export default function Layout() {
 
   useEffect(() => {
     let isMounted = true;
-    Linking.getInitialURL()
-      .then((initialUrl) => {
-        if (isMounted) {
-          navigateToUrl(initialUrl);
-        }
-      })
-      .catch(() => null);
+    // Linking.getInitialURL()
+    //   .then((initialUrl) => {
+    //     if (isMounted) {
+    //       navigateToUrl(initialUrl);
+    //     }
+    //   })
+    //   .catch(() => null);
 
-    const subscription = Linking.addEventListener("url", (event) => {
-      navigateToUrl(event.url);
-    });
+    // const subscription = Linking.addEventListener("url", (event) => {
+    //   navigateToUrl(event.url);
+    // });
 
     return () => {
       isMounted = false;
-      subscription.remove();
+      // subscription.remove();
     };
   }, [navigateToUrl]);
 
+  useEffect(() => {
+    const setup = async () => {
+      await new Promise(res => setTimeout(res, 500)); // optional small delay
+      SplashScreen.hideAsync();
+      setTimeout(() => {
+        setShowSecondSplash(false);
+      }, 2000); // show second splash 1.5 sec
+    };
+    setup();
+  }, []);
+
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
-          <AppOpenAdComponent />
+          {!showSecondSplash &&<AppOpenAdComponent />}
           <StatusBar style="dark" />
+          <SecondSplash showSecondSplash={showSecondSplash} />
           <Stack
             screenOptions={{
               headerShown: false,

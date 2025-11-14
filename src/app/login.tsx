@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { ERROR_MESSAGES } from "@/constants/messages";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/theme/ThemeProvider";
+import { isTablet } from "@/utils/lib";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -72,7 +73,7 @@ export default function Login() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View style={{ alignItems: "center" }}>
+        <View style={{ alignItems: "center", marginTop:isTablet() ? verticalScale(35) : verticalScale(70) }}>
           <Image
             source={require("../../assets/images/logoinapp.png")}
             style={{
@@ -85,9 +86,9 @@ export default function Login() {
         <View
           style={{
             flex: 1,
-            justifyContent: "center",
+            marginTop:verticalScale(20),
             paddingHorizontal:
-              Platform.OS === "ios" && (Platform as any).isPad
+             isTablet()
                 ? scale(60)
                 : scale(24),
           }}

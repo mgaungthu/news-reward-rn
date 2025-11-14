@@ -1,5 +1,4 @@
-
-import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
+import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
 import { useIsFocused } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -12,9 +11,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 
+import * as Device from "expo-device";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 
@@ -25,13 +25,15 @@ import { useSettingsStore } from "@/store/settingsSlice";
 import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 
+import { CustomTextInput } from "@/components/CustomTextInput";
 import { HeaderBar } from "@/components/HeaderBar";
+import { isTablet } from "@/utils/lib";
+import { useRouter } from "expo-router";
 
-
-
-export default  function HomePage() {
+export default function HomePage() {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const router = useRouter();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["posts"],
@@ -40,23 +42,22 @@ export default  function HomePage() {
   const { fetchSettings, banner_image } = useSettingsStore();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const isFocused = useIsFocused();
 
-
-
-const logScreenView = async (screenName: string) => {
-  const analyticsInstance = getAnalytics();
-  await logEvent(analyticsInstance, 'screen_view', {
-    firebase_screen: screenName,
-    firebase_screen_class: screenName,
-  });
-};
+  const logScreenView = async (screenName: string) => {
+    const analyticsInstance = getAnalytics();
+    await logEvent(analyticsInstance, "screen_view", {
+      firebase_screen: screenName,
+      firebase_screen_class: screenName,
+    });
+  };
 
   useEffect(() => {
     if (isFocused) {
       refetch();
       fetchSettings();
-      logScreenView('home');
+      logScreenView("home");
     }
   }, [isFocused]);
 
@@ -70,7 +71,17 @@ const logScreenView = async (screenName: string) => {
   const posts = data?.data || data || [];
 
   const { width } = Dimensions.get("window");
-  const isIpad = Platform.OS === "ios" && width >= 768;
+  const isIpad = (Platform.OS === "ios" && width >= 768) || (Device.deviceType === Device.DeviceType.TABLET);
+
+  const handleSearchSubmit = () => {
+    const trimmed = searchTerm.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    router.push({ pathname: "/search", params: { q: trimmed } });
+    setSearchTerm("");
+  };
 
   return (
     <SafeAreaView
@@ -86,16 +97,26 @@ const logScreenView = async (screenName: string) => {
             tintColor={colors.primary}
           />
         }
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       >
-        
+        <HeaderBar
+          title="Lotaya Dinga"
+          subtitle="Stay updated & earn rewards!"
+        />
 
-        <HeaderBar title="Lotaya Dinga" subtitle="Stay updated & earn rewards!" />
+        <View style={styles.banner}>
+          <Image source={{ uri: banner_image }} style={styles.bannerImage} />
+        </View>
 
-
-         <View style={styles.banner}>
-          <Image
-            source={{ uri: banner_image || "https://picsum.photos/800/400" }}
-            style={styles.bannerImage}
+        <View style={{ marginVertical: verticalScale(10) }}>
+          <CustomTextInput
+            placeholder="Search..."
+            icon="search"
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
           />
         </View>
 
@@ -120,7 +141,8 @@ const logScreenView = async (screenName: string) => {
             )}
             {posts.map((item: any, index: number) => {
               const hasRead = item.user_claims?.some(
-                (claim: any) => claim.user_id === user?.id && claim.status === "claimed"
+                (claim: any) =>
+                  claim.user_id === user?.id && claim.status === "claimed"
               );
 
               return (
@@ -143,7 +165,6 @@ const logScreenView = async (screenName: string) => {
           </View>
         </View>
       </ScrollView>
-     
     </SafeAreaView>
   );
 }
@@ -169,14 +190,13 @@ const styles = StyleSheet.create({
   banner: {
     borderRadius: scale(12),
     overflow: "hidden",
-    marginBottom: verticalScale(24),
   },
   bannerImage: {
     width: "100%",
     height:
-  Platform.OS === "ios" && (Platform as any).isPad
-    ? verticalScale(220)
-    : verticalScale(160),
+      isTablet()
+        ? verticalScale(220)
+        : verticalScale(160),
     borderRadius: scale(12),
   },
   section: {

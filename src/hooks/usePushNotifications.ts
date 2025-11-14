@@ -1,3 +1,4 @@
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Platform } from "react-native";
@@ -79,10 +80,10 @@ async function registerForPushNotificationsAsync(): Promise<string | undefined> 
     });
   }
 
-  // if (!Device.isDevice) {
-  //   Alert.alert("Push Notifications", "Must use a physical device for push notifications.");
-  //   return undefined;
-  // }
+  if (!Device.isDevice) {
+    Alert.alert("Push Notifications", "Must use a physical device for push notifications.");
+    return undefined;
+  }
 
   // Check permission
   const { status: existingStatus } = await Notifications.getPermissionsAsync();

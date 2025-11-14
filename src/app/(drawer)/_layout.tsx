@@ -68,6 +68,12 @@ function CustomDrawer(props: DrawerContentComponentProps) {
         screen: "profile",
       },
       {
+        label: "Favorites",
+        icon: "heart-outline",
+        type: "route",
+        routeName: "favorites",
+      },
+      {
         label: "Privacy Policy",
         icon: "document-text-outline",
         type: "route",
@@ -101,10 +107,10 @@ function CustomDrawer(props: DrawerContentComponentProps) {
             style={styles.avatar}
           />
           <Text style={[styles.name, { color: "#000" }]}>
-            {user?.name || "Guest"}
+            {user?.name || "Welcome"}
           </Text>
           <Text style={[styles.email, { color: "#000" }]}>
-            {user?.email || "guest@example.com"}
+            {user?.email || "Earn points and Unlock"}
           </Text>
         </View>
 
@@ -201,6 +207,15 @@ export default function Layout() {
           drawerLabel: "Home",
           drawerIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="favorites"
+        options={{
+          drawerLabel: "Favorites",
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="heart-outline" size={size} color={color} />
           ),
         }}
       />

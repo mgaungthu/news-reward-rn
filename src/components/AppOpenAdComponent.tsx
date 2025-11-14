@@ -9,8 +9,12 @@ export const AppOpenAdComponent: React.FC = () => {
   const isAdLoaded = useRef(false);
   const lastShownTime = useRef<number | null>(null);
   const { ad_app_open_id } = useSettingsStore();
-
+ 
   useEffect(() => {
+    if (!ad_app_open_id) {
+      console.log("[GAM] No App Open Ad ID provided — skipping ad load");
+      return;
+    }
     const appOpenAd = AppOpenAd.createForAdRequest(
       ad_app_open_id || "/6499/example/app-open",
       { requestNonPersonalizedAdsOnly: true }

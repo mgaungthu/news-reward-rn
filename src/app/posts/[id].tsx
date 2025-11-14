@@ -1,19 +1,13 @@
-import { getPostById } from "@/api/postApi";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
-import { Header } from "@/components/Header";
-import { PostWebView } from "@/components/PostWebView";
-import { VimeoPlayer } from "@/components/VimeoPlayer";
-import { useAuth } from "@/context/AuthContext";
-import { useTheme } from "@/theme/ThemeProvider";
-import { moderateScale, scale, verticalScale } from "@/utils/scale";
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
-  Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -23,29 +17,98 @@ import {
 import RenderHtml from "react-native-render-html";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { getPostById } from "@/api/postApi";
+import { BannerAdComponent } from "@/components/BannerAdComponent";
+import { Header } from "@/components/Header";
+import { PostWebView } from "@/components/PostWebView";
+import { VimeoPlayer } from "@/components/VimeoPlayer";
+import { useAuth } from "@/context/AuthContext";
+import { useFavoritesStore } from "@/store/useFavoritesStore";
+import { useVipPostStore } from "@/store/useVipPostStore";
+import { useTheme } from "@/theme/ThemeProvider";
+import { isTablet } from "@/utils/lib";
+import { prettyDate } from "@/utils/prettyDate";
+import { moderateScale, scale, verticalScale } from "@/utils/scale";
+
 interface UserClaim {
   post_id: number;
-  user_id:number;
+  user_id: number;
   status: "pending" | "claimed" | string;
 }
 
-export default function NewsDetail() {
+export default function PostsDetail() {
   const { id } = useLocalSearchParams();
   const { colors } = useTheme();
   const [showWebView, setShowWebView] = useState(false);
   const { width } = useWindowDimensions();
   const { isLoggedIn, user } = useAuth();
+  const { vipPurchasePosts , loading} = useVipPostStore();
+
+  const hasPurchased = vipPurchasePosts.some(item => item.post_id === id);
+  
+//   alert(hasPurchased)
+ 
+  
+// if (!loading) {
+//   // Not logged in → login page
+//   if (!isLoggedIn) {
+//     router.replace("/login");
+//     return null;
+//   }
+
+//   // VIP post but not purchased → purchase screen
+//   if (!hasPurchased) {
+//     router.replace(`/vip`);
+//     return null;
+//   }
+// }
 
   const {
     data: post,
     isLoading,
     isError,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["post", id],
     queryFn: () => getPostById(id as string),
     enabled: !!id,
   });
+
+  const addFavorite = useFavoritesStore((state) => state.addFavorite);
+  const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
+  const isFavorite = useFavoritesStore(
+    useCallback(
+      (state) =>
+        post ? state.favorites.some((fav) => fav.id === post.id) : false,
+      [post?.id]
+    )
+  );
+
+  const toggleFavorite = useCallback(() => {
+    if (!post) {
+      return;
+    }
+
+    if (!isLoggedIn) {
+      Alert.alert("Sign in required", "Please sign in to save favourites.");
+      return;
+    }
+
+    if (isFavorite) {
+      removeFavorite(post.id);
+      return;
+    }
+
+    addFavorite({
+      id: post.id,
+      title: post.title,
+      excerpt: post.excerpt || post.description,
+      feature_image: post.feature_image,
+      feature_image_url: post.feature_image_url || post.feature_image,
+      created_at: post.created_at,
+      is_vip: post.is_vip,
+    });
+  }, [addFavorite, isFavorite, isLoggedIn, post, removeFavorite]);
 
   if (isLoading) {
     return (
@@ -81,14 +144,32 @@ export default function NewsDetail() {
         claim.user_id === user?.id && claim.status === "claimed"
     );
 
-
   // When WebView is active
   if (showWebView && post.read_more_url) {
-    return <PostWebView post={post} onBack={() => {
-      setShowWebView(false);
-      refetch();
-    }} />;
+    return (
+      <PostWebView
+        post={post}
+        onBack={() => {
+          setShowWebView(false);
+          refetch();
+        }}
+      />
+    );
   }
+
+  const sharePost = async () => {
+    try {
+      const webShareUrl = `https://lotaya.mandalayads.io/post-open?post_id=${post.id}`;
+
+      await Share.share({
+        title: post.title,
+        message: `${post.title}\n\nRead on Lotaya Dinga:\n${webShareUrl}`,
+        url: webShareUrl,
+      });
+    } catch (error) {
+      console.log("Share error:", error);
+    }
+  };
 
   // Default post detail screen
   return (
@@ -105,6 +186,8 @@ export default function NewsDetail() {
 
       <ScrollView
         style={[styles.scrollView, { backgroundColor: colors.background }]}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       >
         {post.feature_image_url && (
           <Image
@@ -112,6 +195,51 @@ export default function NewsDetail() {
             style={styles.featureImage}
           />
         )}
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: scale(10),
+            marginRight: scale(5),
+            marginLeft: scale(5),
+          }}
+        >
+          {/* Created At */}
+          <Text style={{ fontSize: 12, color: colors.muted }}>
+            {prettyDate(post.created_at) ?? ""}
+          </Text>
+
+          {/* Action Buttons */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: scale(16),
+            }}
+          >
+            {isLoggedIn && (
+              <TouchableOpacity onPress={toggleFavorite}>
+                <Ionicons
+                  name={isFavorite ? "heart" : "heart-outline"}
+                  size={scale(18)}
+                  color={isFavorite ? colors.primary : colors.text}
+                />
+              </TouchableOpacity>
+            )}
+
+            
+            {/* Share Button */}
+            <TouchableOpacity onPress={sharePost}>
+              <Ionicons
+                name="share-social-outline"
+                size={scale(17)}
+                color={colors.text}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <View style={styles.contentContainer}>
           <Text style={[styles.titleText, { color: colors.text }]}>
@@ -154,19 +282,17 @@ export default function NewsDetail() {
               disabled={hasUserClaimed(post)}
               onPress={() => setShowWebView(true)}
             >
-              <Text style={[styles.pointsButtonText, { color: colors.background }]}>
+              <Text
+                style={[styles.pointsButtonText, { color: colors.background }]}
+              >
                 {hasUserClaimed(post) ? "Claimed" : "Claim your point"}
               </Text>
             </TouchableOpacity>
           )}
         </View>
-        
       </ScrollView>
 
       <BannerAdComponent />
-
-      
-      
     </SafeAreaView>
   );
 }
@@ -179,22 +305,20 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: scale(16)
+    padding: scale(16),
   },
   scrollView: {
     flex: 1,
   },
   featureImage: {
     width: "100%",
-    height: Platform.OS === "ios" && (Platform as any).isPad
-        ? verticalScale(220)
-        : verticalScale(180),
+    height: isTablet() ? verticalScale(220) : verticalScale(140),
     resizeMode: "cover",
-    borderRadius:10,
-    marginTop:scale(10)
+    borderRadius: 10,
+    marginTop: scale(10),
   },
   contentContainer: {
-    padding: scale(16),
+    paddingVertical: scale(10),
   },
   titleText: {
     fontSize: moderateScale(18),

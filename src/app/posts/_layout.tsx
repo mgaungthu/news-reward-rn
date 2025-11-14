@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import { savePushToken } from "@/api/postApi";
 import usePushNotifications from "@/hooks/usePushNotifications";
 
-export default function NewsLayout() {
+export default function PostsLayout() {
+
 
    const { expoPushToken } = usePushNotifications(); 
 
@@ -15,7 +16,7 @@ export default function NewsLayout() {
     }
    },[expoPushToken])
 
-  return (
+      return (
     <Stack
       screenOptions={{
         headerShown: false, // you use custom Header
@@ -26,4 +27,5 @@ export default function NewsLayout() {
       <Stack.Screen name="[id]" />
     </Stack>
   );
+
 }

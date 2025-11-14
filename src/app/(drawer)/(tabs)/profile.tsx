@@ -18,6 +18,7 @@ import { HeaderBar } from "@/components/HeaderBar";
 import { useAuth } from "@/context/AuthContext";
 import { useAds } from "@/hooks/useAds";
 import { useTheme } from "@/theme/ThemeProvider";
+import { isTablet } from "@/utils/lib";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 
 export default function Profile() {
@@ -107,7 +108,7 @@ export default function Profile() {
             {user?.name || "Guest User"}
           </Text>
           <Text style={[styles.email, { color: colors.textSecondary }]}>
-            {user?.email || "guest@example.com"}
+            {user?.email || "Earn points and unlock"}
           </Text>
 
           {/* Stats Section */}
@@ -268,7 +269,7 @@ export default function Profile() {
       }}
     >
       <HeaderBar
-        title="Guest Profile"
+        title="Welcome"
         subtitle=" Sign in, get points and explore "
       />
       <View
@@ -284,7 +285,7 @@ export default function Profile() {
             Your Daily Source of contents
           </Text>
         </View>
-        <Text style={styles.guestTitle}>Guest Profile</Text>
+        <Text style={styles.guestTitle}>Welcome</Text>
         <View style={styles.guestMessageWrapper}>
           <Text style={[styles.guestMessage, { color: colors.textSecondary }]}>
             You are not logged in. Please sign in or register to access your
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   },
   guestContainer: {
     flex: 1,
-    marginTop:scale(80),
+    marginTop:isTablet() ? verticalScale(10) : verticalScale(80),
     alignItems: "center",
   },
   guestTitle: {
@@ -434,8 +435,8 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10),
   },
   logo: {
-    width: scale(100),
-    height: scale(100),
+    width: scale(120),
+    height: scale(120),
   },
   slogan: {
     marginTop: verticalScale(8),
