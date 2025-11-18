@@ -14,7 +14,7 @@ const STORAGE_KEYS = {
   REWARDED_LAST_SHOWN_AT: "ads:rewarded:lastShownAt",
 } as const;
 
-const REWARDED_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+const REWARDED_COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes
 const DEFAULT_INTERSTITIAL_THRESHOLD = 5;
 
 // ---------- Compat: some versions don't export CLOSED/ERROR for Rewarded ----------

@@ -13,8 +13,14 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-4870132629348916~3224679735",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      [
+        "react-native-iap",
+        {
+          "in_app_purchases": true
         }
       ],
       "expo-secure-store",
@@ -50,14 +56,12 @@
         "UIBackgroundModes": [
           "remote-notification"
         ],
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-3940256099942544~1458002511"
+        "ITSAppUsesNonExemptEncryption": false,
+        "FacebookAppID": "689071914259523"
       }
     },
     "android": {
-      "versionCode": 15,
+      "versionCode": 16,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
@@ -66,19 +70,24 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.mandalayads.lotayadinga",
-      "android": {
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "category": ["BROWSABLE", "DEFAULT"],
-          "data": [
-            {
-              "scheme": "lotaya-dinga"
-            }
-          ]
+      "playBilling": true,
+      "resources": {
+        "strings": {
+          "facebook_app_id": "689071914259523"
         }
-      ]
-    }
+      },
+      "manifest": {
+        "meta-data": [
+          {
+            "android:name": "com.facebook.sdk.ApplicationId",
+            "android:value": "@string/facebook_app_id"
+          },
+          {
+            "android:name": "com.facebook.ads.AudienceNetworkAds",
+            "android:value": "true"
+          }
+        ]
+      }
     },
     "web": {
       "output": "static",

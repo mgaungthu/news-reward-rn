@@ -231,7 +231,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     borderRadius: scale(25),
     paddingVertical: verticalScale(12),
-    marginBottom: verticalScale(20),
     alignItems: "center",
   },
   deleteButtonText: {

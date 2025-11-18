@@ -9,6 +9,7 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { getPosts } from "@/api/postApi";
 import { CustomTextInput } from "@/components/CustomTextInput";
@@ -71,13 +72,6 @@ export default function SearchPage() {
         style={styles.container}
         contentContainerStyle={{ padding: scale(16) }}
         keyboardShouldPersistTaps="handled"
-        // refreshControl={
-        //   <RefreshControl
-        //     refreshing={refreshing}
-        //     onRefresh={refetch}
-        //     tintColor={colors.primary}
-        //   />
-        // }
       >
         <HeaderBar
           title="Search"
@@ -97,9 +91,17 @@ export default function SearchPage() {
         </View>
 
         {!showResults && !isLoading && (
-          <Text style={[styles.helperText, { color: colors.muted }]}>
-            Type a keyword above and press search to view matching posts.
-          </Text>
+          <View style={{ alignItems: "center", marginTop: verticalScale(40) }}>
+            <Ionicons
+              name="search-outline"
+              size={scale(56)}
+              color={colors.muted}
+              style={{ marginBottom: verticalScale(10) }}
+            />
+            <Text style={[styles.helperText, { color: colors.muted }]}>
+              Type a keyword above and press search posts.
+            </Text>
+          </View>
         )}
 
         {isLoading && (
@@ -118,9 +120,17 @@ export default function SearchPage() {
         {showResults && !isLoading && !isError && (
           <View style={styles.resultsWrapper}>
             {filteredPosts.length === 0 ? (
-              <Text style={{ color: colors.muted }}>
-                No results found for "{currentQuery}".
-              </Text>
+              <View style={{ alignItems: "center", marginTop: verticalScale(40) }}>
+                <Ionicons
+                  name="search-outline"
+                  size={scale(48)}
+                  color={colors.muted}
+                  style={{ marginBottom: verticalScale(10) }}
+                />
+                <Text style={{ color: colors.muted }}>
+                  No results found for "{currentQuery}".
+                </Text>
+              </View>
             ) : (
               <>
                 <Text style={{ color: colors.text, fontSize: scale(14), marginBottom:verticalScale(10) }}>

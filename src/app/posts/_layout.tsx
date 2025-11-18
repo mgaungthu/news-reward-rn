@@ -1,22 +1,23 @@
-
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 
 import { savePushToken } from "@/api/postApi";
+import { useAuth } from "@/context/AuthContext";
 import usePushNotifications from "@/hooks/usePushNotifications";
 
 export default function PostsLayout() {
+  const { expoPushToken } = usePushNotifications();
+  const { isLoggedIn } = useAuth();
 
-
-   const { expoPushToken } = usePushNotifications(); 
-
-   useEffect(()=> {
-     if (expoPushToken) {
-      savePushToken(expoPushToken);
+  useEffect(() => {
+    if (isLoggedIn) {
+      if (expoPushToken) {
+        savePushToken(expoPushToken);
+      }
     }
-   },[expoPushToken])
+  }, [expoPushToken]);
 
-      return (
+  return (
     <Stack
       screenOptions={{
         headerShown: false, // you use custom Header
@@ -27,5 +28,4 @@ export default function PostsLayout() {
       <Stack.Screen name="[id]" />
     </Stack>
   );
-
 }

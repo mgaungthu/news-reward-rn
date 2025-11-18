@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
@@ -5,29 +6,38 @@ import { Alert, Platform } from "react-native";
 
 // Configure notification behavior (optional)
 Notifications.setNotificationHandler({
-       handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
 });
 
 export default function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>();
-  const [notification, setNotification] = useState<Notifications.Notification | undefined>();
-  const [notificationResponse, setNotificationResponse] =
-    useState<Notifications.NotificationResponse | undefined>();
+  const [notification, setNotification] = useState<
+    Notifications.Notification | undefined
+  >();
+  const [notificationResponse, setNotificationResponse] = useState<
+    Notifications.NotificationResponse | undefined
+  >();
 
-const notificationListener = useRef<Notifications.EventSubscription | null>(null);
-const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  const notificationListener = useRef<Notifications.EventSubscription | null>(
+    null
+  );
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
+
+  const { isLoggedIn } = useAuth();
 
   // 🧠 Register push notifications on mount
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => {
-      setExpoPushToken(token);
-    });
+    if (isLoggedIn) {
+      registerForPushNotificationsAsync().then((token) => {
+        setExpoPushToken(token);
+      });
+    }
 
     // Listen for foreground notifications
     notificationListener.current =
@@ -42,7 +52,7 @@ const responseListener = useRef<Notifications.EventSubscription | null>(null);
       });
 
     // Cleanup listeners
-   return () => {
+    return () => {
       try {
         if (
           notificationListener.current &&
@@ -70,7 +80,9 @@ const responseListener = useRef<Notifications.EventSubscription | null>(null);
 }
 
 // ⚙️ Helper: Register and return Expo push token
-async function registerForPushNotificationsAsync(): Promise<string | undefined> {
+async function registerForPushNotificationsAsync(): Promise<
+  string | undefined
+> {
   let token: string | undefined;
 
   if (Platform.OS === "android") {
@@ -81,7 +93,10 @@ async function registerForPushNotificationsAsync(): Promise<string | undefined> 
   }
 
   if (!Device.isDevice) {
-    Alert.alert("Push Notifications", "Must use a physical device for push notifications.");
+    Alert.alert(
+      "Push Notifications",
+      "Must use a physical device for push notifications."
+    );
     return undefined;
   }
 
@@ -95,7 +110,10 @@ async function registerForPushNotificationsAsync(): Promise<string | undefined> 
   }
 
   if (finalStatus !== "granted") {
-    Alert.alert("Push Notifications", "Permission not granted for push notifications.");
+    Alert.alert(
+      "Push Notifications",
+      "Permission not granted for push notifications."
+    );
     return undefined;
   }
 

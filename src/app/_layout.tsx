@@ -57,21 +57,21 @@ export default function Layout() {
 
   useEffect(() => {
     let isMounted = true;
-    // Linking.getInitialURL()
-    //   .then((initialUrl) => {
-    //     if (isMounted) {
-    //       navigateToUrl(initialUrl);
-    //     }
-    //   })
-    //   .catch(() => null);
+    Linking.getInitialURL()
+      .then((initialUrl) => {
+        if (isMounted) {
+          navigateToUrl(initialUrl);
+        }
+      })
+      .catch(() => null);
 
-    // const subscription = Linking.addEventListener("url", (event) => {
-    //   navigateToUrl(event.url);
-    // });
+    const subscription = Linking.addEventListener("url", (event) => {
+      navigateToUrl(event.url);
+    });
 
     return () => {
       isMounted = false;
-      // subscription.remove();
+      subscription.remove();
     };
   }, [navigateToUrl]);
 

@@ -6,11 +6,10 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -51,13 +50,6 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
       <WebView
         source={{ uri: post.read_more_url }}
         startInLoadingState
-        renderLoading={() => (
-          <ActivityIndicator
-            style={styles.webViewLoading}
-            size="large"
-            color={colors.primary}
-          />
-        )}
         onNavigationStateChange={(navState) => {
           const detectedUrl = navState.url;
           if (
@@ -117,11 +109,6 @@ export function PostWebView({ post, onBack }: PostWebViewProps) {
 }
 
 const styles = StyleSheet.create({
-  webViewLoading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   detectButton: {
     position: "absolute",
     bottom: verticalScale(16),

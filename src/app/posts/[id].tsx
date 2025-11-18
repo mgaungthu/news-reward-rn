@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -15,6 +14,8 @@ import {
   useWindowDimensions,
 } from "react-native";
 import RenderHtml from "react-native-render-html";
+import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getPostById } from "@/api/postApi";
@@ -24,7 +25,6 @@ import { PostWebView } from "@/components/PostWebView";
 import { VimeoPlayer } from "@/components/VimeoPlayer";
 import { useAuth } from "@/context/AuthContext";
 import { useFavoritesStore } from "@/store/useFavoritesStore";
-import { useVipPostStore } from "@/store/useVipPostStore";
 import { useTheme } from "@/theme/ThemeProvider";
 import { isTablet } from "@/utils/lib";
 import { prettyDate } from "@/utils/prettyDate";
@@ -42,26 +42,6 @@ export default function PostsDetail() {
   const [showWebView, setShowWebView] = useState(false);
   const { width } = useWindowDimensions();
   const { isLoggedIn, user } = useAuth();
-  const { vipPurchasePosts , loading} = useVipPostStore();
-
-  const hasPurchased = vipPurchasePosts.some(item => item.post_id === id);
-  
-//   alert(hasPurchased)
- 
-  
-// if (!loading) {
-//   // Not logged in → login page
-//   if (!isLoggedIn) {
-//     router.replace("/login");
-//     return null;
-//   }
-
-//   // VIP post but not purchased → purchase screen
-//   if (!hasPurchased) {
-//     router.replace(`/vip`);
-//     return null;
-//   }
-// }
 
   const {
     data: post,
@@ -113,12 +93,58 @@ export default function PostsDetail() {
   if (isLoading) {
     return (
       <SafeAreaView
-        style={[
-          styles.centeredContainer,
-          { backgroundColor: colors.background },
-        ]}
+        style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Header title="Loading..." />
+        <View style={{ paddingTop: scale(16) }}>
+          {/* Skeleton for Image */}
+          <SkeletonPlaceholder>
+            <SkeletonPlaceholder.Item
+              width="100%"
+              height={isTablet() ? verticalScale(220) : verticalScale(140)}
+              borderRadius={10}
+              marginBottom={scale(20)}
+            />
+          </SkeletonPlaceholder>
+
+          {/* Skeleton Title */}
+          <SkeletonPlaceholder>
+            <SkeletonPlaceholder.Item
+              width={"80%"}
+              height={22}
+              borderRadius={6}
+              marginBottom={scale(16)}
+            />
+          </SkeletonPlaceholder>
+
+          {/* Skeleton Text Lines */}
+          <SkeletonPlaceholder>
+            <SkeletonPlaceholder.Item marginTop={10}>
+              {[100, 95, 90, 85, 80, 75, 70, 60, 50, 10, 30, 50, 200].map(
+                (w, idx) => (
+                  <SkeletonPlaceholder.Item
+                    key={idx}
+                    width={`${w}%`}
+                    height={16}
+                    borderRadius={6}
+                    marginBottom={scale(12)}
+                  />
+                )
+              )}
+            </SkeletonPlaceholder.Item>
+          </SkeletonPlaceholder>
+
+          {/* Skeleton Button */}
+          <SkeletonPlaceholder>
+            <SkeletonPlaceholder.Item
+              width={scale(150)}
+              height={scale(40)}
+              borderRadius={10}
+              marginTop={scale(25)}
+              alignSelf="center"
+            />
+          </SkeletonPlaceholder>
+        </View>
       </SafeAreaView>
     );
   }
@@ -189,7 +215,11 @@ export default function PostsDetail() {
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
       >
-        {post.feature_image_url && (
+        {post.is_vip ? (
+          <View style={{ marginVertical: 20 }}>
+            {post.vimeo_url && <VimeoPlayer vimeoUrl={post.vimeo_url} />}
+          </View>
+        ) : (
           <Image
             source={{ uri: post.feature_image_url }}
             style={styles.featureImage}
@@ -229,7 +259,6 @@ export default function PostsDetail() {
               </TouchableOpacity>
             )}
 
-            
             {/* Share Button */}
             <TouchableOpacity onPress={sharePost}>
               <Ionicons
@@ -255,10 +284,6 @@ export default function PostsDetail() {
               a: { color: colors.primary },
             }}
           />
-
-          <View style={{ marginVertical: 20 }}>
-            {post.vimeo_url && <VimeoPlayer vimeoUrl={post.vimeo_url} />}
-          </View>
 
           {!post.is_vip && isLoggedIn && (
             <TouchableOpacity
@@ -345,6 +370,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderRadius:5,
+    marginTop:verticalScale(10)
   },
   pointsButtonText: {
     fontWeight: "600",
