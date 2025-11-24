@@ -13,6 +13,7 @@ export interface SettingsState {
   ad_reward_id: string;
   ad_app_open_id: string;
   ad_banner: string;
+  ad_native_id: string;
   banner_image: string;
   android_app_id: string;
   ios_app_id: string;
@@ -32,6 +33,7 @@ export const useSettingsStore = create<SettingsState>()(
       ad_reward_id: "",
       ad_app_open_id: "",
       ad_banner: "",
+      ad_native_id: "",
       banner_image: "",
       android_app_id: "",
       ios_app_id: "",
@@ -51,12 +53,14 @@ export const useSettingsStore = create<SettingsState>()(
                   ad_interstitial_id: data.ad_interstitial_id_android || "",
                   ad_reward_id: data.ad_reward_id_android || "",
                   ad_app_open_id: data.ad_app_open_id_android || "",
+                  ad_native_id: data.ad_native_id_android || "",
                 }
               : {
                   ad_banner_id: data.ad_banner_id_ios || "",
                   ad_interstitial_id: data.ad_interstitial_id_ios || "",
                   ad_reward_id: data.ad_reward_id_ios || "",
                   ad_app_open_id: data.ad_app_open_id_ios || "",
+                  ad_native_id: data.ad_native_id_ios || "",
                 };
 
           set({

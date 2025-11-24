@@ -1,4 +1,3 @@
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -247,6 +246,31 @@ export function useAds() {
     return remaining <= 0 && rewardedLoaded;
   }, [getRewardedRemainingMs, rewardedLoaded]);
 
+  // Show Interstitial every 3 presses (global counter)
+  const showInterstitialEvery3Clicks = useCallback(async () => {
+    const key = "post_click_counter";
+    const raw = await AsyncStorage.getItem(key);
+    const count = raw ? Number(raw) + 1 : 1;
+
+    await AsyncStorage.setItem(key, String(count));
+
+    if (count >= 3) {
+      // Remove instead of resetting
+      
+
+      if (interstitialLoaded && interstitial?.loaded) {
+        interstitial.show();
+        await AsyncStorage.removeItem(key);
+      } else {
+        pendingInterstitialShowRef.current = true;
+        if (!loadingInterstitialRef.current && interstitial?.load) {
+          loadingInterstitialRef.current = true;
+          interstitial.load();
+        }
+      }
+    }
+  }, [interstitialLoaded, interstitial]);
+
   return {
     interstitialLoaded,
     rewardedLoaded,
@@ -257,5 +281,6 @@ export function useAds() {
     // helpers
     resetRewardedCooldown,
     canShowRewardedNow,
+    showInterstitialEvery3Clicks,
   };
 }

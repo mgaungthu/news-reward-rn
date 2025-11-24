@@ -122,6 +122,7 @@ export default function Login() {
           <TextInput
             placeholder="Enter your password"
             placeholderTextColor={colors.textSecondary || "#999"}
+            autoCapitalize="none"
             secureTextEntry
             value={password}
             onChangeText={setPassword}

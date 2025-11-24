@@ -1,8 +1,10 @@
 import { getCurrentUser, loginUser, logoutUser } from "@/api/authApi";
 import { useFavoritesStore } from "@/store/useFavoritesStore";
 import { useVipPostStore } from "@/store/useVipPostStore";
+import { getDeviceId } from "@/utils/deviceId";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
+
 
 interface AuthContextType {
   token: string | null;
@@ -45,7 +47,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Login logic
   const login = async (email: string, password: string) => {
-    const res = await loginUser({ email, password });
+    const deviceId = await getDeviceId();
+    const res = await loginUser({ email, password, device_id: deviceId });
     await SecureStore.setItemAsync("accessToken", res.token);
     await SecureStore.setItemAsync("user", JSON.stringify(res.user));
     setToken(res.token);

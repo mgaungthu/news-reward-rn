@@ -19,7 +19,7 @@ export const BannerAdComponent = () => {
           {!loaded && <ActivityIndicator />}
           <BannerAd
             unitId={ad_banner_id}
-            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+            size={BannerAdSize.BANNER}
             onAdLoaded={() => setLoaded(true)}
             onAdFailedToLoad={(error) =>
               console.warn("❌ [GAM] Banner failed to load:", error)

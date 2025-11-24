@@ -44,9 +44,9 @@ function InterstitialAdCardBase({
   required_points = 0,
   readStatus, // 👈 add this
   created_at,
-  is_vip=0
+  is_vip=false
 }: Props) {
-  const { maybeShowInterstitialOnAction } = useAds();
+  const { showInterstitialEvery3Clicks } = useAds();
   const { colors } = useTheme();
   const router = useRouter(); // 👈 for navigation
   const { isLoggedIn, getUser } = useAuth();
@@ -83,7 +83,7 @@ function InterstitialAdCardBase({
     }
 
     // ✅ Wait for ad to finish before navigating
-    maybeShowInterstitialOnAction(adKey, threshold);
+    showInterstitialEvery3Clicks();
     // ✅ Navigate after ad is closed or fails
     router.push({
       pathname: "/posts/[id]",
@@ -92,7 +92,7 @@ function InterstitialAdCardBase({
   }, [
     adKey,
     threshold,
-    maybeShowInterstitialOnAction,
+    showInterstitialEvery3Clicks,
     router,
     i,
     title,

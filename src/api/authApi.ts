@@ -18,6 +18,7 @@ export const registerUser = async (data: {
 export const loginUser = async (data: {
   email: string;
   password: string;
+  device_id:string;
 }) => {
   try {
     const res = await axiosInstance.post("/login", data);

@@ -1,6 +1,10 @@
-import { API_BASE_URL } from "@env";
+
+
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+
+import { getDeviceId } from "@/utils/deviceId";
+import { API_BASE_URL } from "@env";
 
 
 const axiosInstance = axios.create({
@@ -13,9 +17,13 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     const token = await SecureStore.getItemAsync("accessToken");
+    const deviceId = await getDeviceId();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    config.headers["X-Device-Id"] = deviceId;
+
     return config;
   },
   (error) => Promise.reject(error)

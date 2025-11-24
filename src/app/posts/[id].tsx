@@ -14,13 +14,14 @@ import {
   useWindowDimensions,
 } from "react-native";
 import RenderHtml from "react-native-render-html";
-import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 
+import Skeleton from "react-native-reanimated-skeleton";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getPostById } from "@/api/postApi";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { Header } from "@/components/Header";
+import NativeAdCard from "@/components/NativeAdCard";
 import { PostWebView } from "@/components/PostWebView";
 import { VimeoPlayer } from "@/components/VimeoPlayer";
 import { useAuth } from "@/context/AuthContext";
@@ -96,54 +97,107 @@ export default function PostsDetail() {
         style={[styles.container, { backgroundColor: colors.background }]}
       >
         <Header title="Loading..." />
-        <View style={{ paddingTop: scale(16) }}>
-          {/* Skeleton for Image */}
-          <SkeletonPlaceholder>
-            <SkeletonPlaceholder.Item
-              width="100%"
-              height={isTablet() ? verticalScale(220) : verticalScale(140)}
-              borderRadius={10}
-              marginBottom={scale(20)}
-            />
-          </SkeletonPlaceholder>
-
-          {/* Skeleton Title */}
-          <SkeletonPlaceholder>
-            <SkeletonPlaceholder.Item
-              width={"80%"}
-              height={22}
-              borderRadius={6}
-              marginBottom={scale(16)}
-            />
-          </SkeletonPlaceholder>
-
-          {/* Skeleton Text Lines */}
-          <SkeletonPlaceholder>
-            <SkeletonPlaceholder.Item marginTop={10}>
-              {[100, 95, 90, 85, 80, 75, 70, 60, 50, 10, 30, 50, 200].map(
-                (w, idx) => (
-                  <SkeletonPlaceholder.Item
-                    key={idx}
-                    width={`${w}%`}
-                    height={16}
-                    borderRadius={6}
-                    marginBottom={scale(12)}
-                  />
-                )
-              )}
-            </SkeletonPlaceholder.Item>
-          </SkeletonPlaceholder>
-
-          {/* Skeleton Button */}
-          <SkeletonPlaceholder>
-            <SkeletonPlaceholder.Item
-              width={scale(150)}
-              height={scale(40)}
-              borderRadius={10}
-              marginTop={scale(25)}
-              alignSelf="center"
-            />
-          </SkeletonPlaceholder>
+        <View style={{ height: "100%" }}>
+          <Skeleton
+            isLoading={isLoading}
+            containerStyle={{flex:1}}
+            layout={[
+              {
+                key: "firstLine",
+                width: "100%",
+                height: 180,
+                marginBottom: verticalScale(15),
+                borderRadius: 10,
+              },
+              {
+                key: "secLine",
+                width: "100%",
+                height: 80,
+                marginBottom: verticalScale(15),
+                borderRadius: 10,
+              },
+              {
+                key: "someOtherId",
+                width: "100%",
+                height: 35,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "thirdLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "50%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "70%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "89%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "78%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "100%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "100%",
+                height: 50,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+            ]}
+          >
+            <Text>Your content</Text>
+            <Text>Other content</Text>
+          </Skeleton>
         </View>
       </SafeAreaView>
     );
@@ -275,6 +329,8 @@ export default function PostsDetail() {
             {post.title}
           </Text>
 
+          <NativeAdCard/>
+
           <RenderHtml
             contentWidth={width}
             source={{ html: post.body || post.content }}
@@ -315,6 +371,8 @@ export default function PostsDetail() {
             </TouchableOpacity>
           )}
         </View>
+
+        <NativeAdCard/>
       </ScrollView>
 
       <BannerAdComponent />
@@ -370,8 +428,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    borderRadius:5,
-    marginTop:verticalScale(10)
+    borderRadius: 5,
+    marginTop: verticalScale(10),
   },
   pointsButtonText: {
     fontWeight: "600",

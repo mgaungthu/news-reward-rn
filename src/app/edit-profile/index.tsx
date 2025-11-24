@@ -50,8 +50,9 @@ export default function EditProfile() {
           style: "destructive",
           onPress: async () => {
             try {
-              await logout();
+              
               await deleteUser();
+              await logout();
               Alert.alert("Success", "Your account has been deleted.");
               router.replace("/login");
             } catch (error: any) {

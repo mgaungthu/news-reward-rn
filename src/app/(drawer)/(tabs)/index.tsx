@@ -17,7 +17,6 @@ import {
 import * as Device from "expo-device";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
 import { getPosts } from "@/api/postApi";
 import { InterstitialAdCard } from "@/components/InterstitialAdCard";
 import { useAuth } from "@/context/AuthContext";
@@ -27,6 +26,7 @@ import { moderateScale, scale, verticalScale } from "@/utils/scale";
 
 import { CustomTextInput } from "@/components/CustomTextInput";
 import { HeaderBar } from "@/components/HeaderBar";
+import NativeAdCard from "@/components/NativeAdCard";
 import { isTablet } from "@/utils/lib";
 import { useRouter } from "expo-router";
 
@@ -71,7 +71,9 @@ export default function HomePage() {
   const posts = data?.data || data || [];
 
   const { width } = Dimensions.get("window");
-  const isIpad = (Platform.OS === "ios" && width >= 768) || (Device.deviceType === Device.DeviceType.TABLET);
+  const isIpad =
+    (Platform.OS === "ios" && width >= 768) ||
+    Device.deviceType === Device.DeviceType.TABLET;
 
   const handleSearchSubmit = () => {
     const trimmed = searchTerm.trim();
@@ -159,6 +161,15 @@ export default function HomePage() {
                     created_at={item.created_at}
                     readStatus={hasRead}
                   />
+                  {index !== 0 && (index + 1) % 3 === 0 && (
+                    <View
+                      style={{
+                        justifyContent: "center",
+                      }}
+                    >
+                      <NativeAdCard />
+                    </View>
+                  )}
                 </View>
               );
             })}
@@ -193,10 +204,7 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: "100%",
-    height:
-      isTablet()
-        ? verticalScale(220)
-        : verticalScale(160),
+    height: isTablet() ? verticalScale(220) : verticalScale(160),
     borderRadius: scale(12),
   },
   section: {

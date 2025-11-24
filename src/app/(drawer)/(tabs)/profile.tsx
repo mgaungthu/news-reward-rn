@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -21,7 +21,6 @@ export default function Profile() {
   const router = useRouter();
   const { colors } = useTheme();
   const { isLoggedIn, loading, getUser } = useAuth();
-
 
   if (loading) {
     return (
@@ -44,12 +43,8 @@ export default function Profile() {
     }
   }, [isLoggedIn]);
 
-
-
   if (isLoggedIn) {
-    return (
-    <LoggedInProfile/>
-  );
+    return <LoggedInProfile />;
   }
 
   return (

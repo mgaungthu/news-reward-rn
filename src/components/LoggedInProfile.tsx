@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   Image,
@@ -20,6 +20,7 @@ import { useRouter } from "expo-router";
 import { resetUserClaims } from "@/api/postApi";
 import { useAuth } from "@/context/AuthContext";
 import { useAds } from "@/hooks/useAds";
+import * as Application from "expo-application";
 
 export function LoggedInProfile() {
   const [refreshing, setRefreshing] = useState(false);
@@ -27,16 +28,12 @@ export function LoggedInProfile() {
 
   const { colors } = useTheme();
   const router = useRouter();
-  const { user, logout, getUser } = useAuth();
+  const { user, logout , getUser} = useAuth();
 
   const { showRewardedWithCooldown } = useAds();
 
 
-   useEffect(() => {
-    if (user) {
-      getUser();
-    }
-  }, [user]);
+
 
   const handlePress = useCallback(async () => {
     if (loadingReward) return;      // ⛔ prevents double tap
@@ -70,6 +67,8 @@ export function LoggedInProfile() {
     }
     setRefreshing(false);
   }, [getUser]);
+
+  const appVersion = Application.nativeApplicationVersion || "1.0.0";
 
   return (
     <SafeAreaView
@@ -249,7 +248,7 @@ export function LoggedInProfile() {
                   Version
                 </Text>
               </View>
-              <Text style={{ color: colors.textSecondary }}>v 1.0.0</Text>
+              <Text style={{ color: colors.textSecondary }}>v {appVersion}</Text>
             </View>
 
             {/* Logout */}
