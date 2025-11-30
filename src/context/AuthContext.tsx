@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   getUser: () => Promise<void>;
+  setisVerify: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,9 +25,11 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: async () => {},
   getUser: async () => {},
+  setisVerify: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isVerify, setisVerify] = useState<boolean | null>(false);
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,8 +52,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     const deviceId = await getDeviceId();
     const res = await loginUser({ email, password, device_id: deviceId });
+    console.log("LOGIN RESPONSE:", res?.user.email_verified_at);
+
+    // If user not verified → return error to component
+    if (!res?.user.email_verified_at) {
+      await SecureStore.setItemAsync("accessToken", res.token);
+      await SecureStore.setItemAsync("user", JSON.stringify(res.user));
+      setisVerify(false);
+      setToken(res.token);
+      setUser(res.user || null);
+      throw new Error("email_not_verified");
+      
+    }
+
+    // Normal login
     await SecureStore.setItemAsync("accessToken", res.token);
     await SecureStore.setItemAsync("user", JSON.stringify(res.user));
+    setisVerify(true);
     setToken(res.token);
     setUser(res.user || null);
   };
@@ -73,15 +91,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await SecureStore.setItemAsync("user", JSON.stringify(res.user));
       return res.user;
     } catch (error) {
+      logout()
       console.error("Error fetching user info:", error);
     }
   };
 
-  const isLoggedIn = !!token;
+  const isLoggedIn = !!token && isVerify === true;
 
   return (
     <AuthContext.Provider
-      value={{ token, user, isLoggedIn, loading, login, logout, getUser }}
+      value={{ token, user, isLoggedIn, loading, login, logout, getUser, setisVerify }}
     >
       {children}
     </AuthContext.Provider>

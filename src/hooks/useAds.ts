@@ -1,5 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   AdEventType,
   RewardedAdEventType,
@@ -7,14 +15,13 @@ import {
 
 import { createAds } from "@/utils/lib";
 
-
 // ---------- Storage & Rules ----------
 const STORAGE_KEYS = {
   REWARDED_LAST_SHOWN_AT: "ads:rewarded:lastShownAt",
 } as const;
 
-const REWARDED_COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes
-const DEFAULT_INTERSTITIAL_THRESHOLD = 5;
+const REWARDED_COOLDOWN_MS = 5 * 60 * 1000; // 4 minutes
+
 
 // ---------- Compat: some versions don't export CLOSED/ERROR for Rewarded ----------
 const REWARDED_EVENTS = {
@@ -30,31 +37,71 @@ const REWARDED_EVENTS = {
 
 type KeyedCounter = Record<string, number>;
 
-export function useAds() {
+type AdsContextValue = {
+  interstitialLoaded: boolean;
+  rewardedLoaded: boolean;
+  rewardedNextInMs: any;
+  rewardedInterstitialLoadCount: number;
+  showRewardedWithCooldown: (
+    onReward?: (amount: number, type?: string) => void,
+    onBlocked?: (msRemaining: number) => void
+  ) => Promise<boolean>;
+  getRewardedRemainingMs: () => Promise<number>;
+  resetRewardedCooldown: () => Promise<void>;
+  refreshRewardedRemaining: () => Promise<number>;
+  showInterstitialEvery3Clicks: () => Promise<void>;
+  showRewardedInterstitialWithCooldown: (
+    onReward?: (amount: number, type?: string) => void,
+    onBlocked?: (msRemaining: number) => void,
+    onClosed?: () => void
+  ) => Promise<boolean>;
+};
+
+const AdsContext = createContext<AdsContextValue | null>(null);
+
+export const AdsProvider = ({ children }: { children: ReactNode }) => {
   const [interstitial, setInterstitial] = useState<any>(null);
   const [rewarded, setRewarded] = useState<any>(null);
+  const [rewardedInterstitial, setRewardedInterstitial] = useState<any>(null);
 
   const [interstitialLoaded, setInterstitialLoaded] = useState(false);
   const [rewardedLoaded, setRewardedLoaded] = useState(false);
+  const [rewardedInterstitialLoaded, setRewardedInterstitialLoaded] =
+    useState(false);
   const [rewardedNextInMs, setRewardedNextInMs] = useState<number>(0);
+  const [rewardedInterstitialLoadCount, setRewardedInterstitialLoadCount] =
+    useState(0);
 
-  const countersRef = useRef<KeyedCounter>({});
   const loadingInterstitialRef = useRef(false);
   const loadingRewardedRef = useRef(false);
+  const loadingRewardedInterstitialRef = useRef(false);
+
+  const onRewardRef = useRef<null | ((amount: number, type?: string) => void)>(
+    null
+  );
+
+    const NormaloRewardRef = useRef<null | ((amount: number, type?: string) => void)>(
+    null
+  );
+
+  
 
   // ✅ new: remember we owe a show once load completes
   const pendingInterstitialShowRef = useRef(false);
 
-  // Initialize ads
+  // Initialize ads once in the provider
   useEffect(() => {
     const ads = createAds();
     setInterstitial(ads.interstitial);
     setRewarded(ads.rewarded);
+    setRewardedInterstitial(ads.rewardedInterstitial);
   }, []);
 
   // ---------- helpers ----------
   const getRewardedRemainingMs = useCallback(async () => {
-    const last = await AsyncStorage.getItem(STORAGE_KEYS.REWARDED_LAST_SHOWN_AT);
+    const last = await AsyncStorage.getItem(
+      STORAGE_KEYS.REWARDED_LAST_SHOWN_AT
+    );
     const lastMs = last ? Number(last) : 0;
     const now = Date.now();
     return Math.max(0, lastMs + REWARDED_COOLDOWN_MS - now);
@@ -66,39 +113,57 @@ export function useAds() {
     return remaining;
   }, [getRewardedRemainingMs]);
 
+  const startRewardCooldown = useCallback(async () => {
+    const now = Date.now();
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.REWARDED_LAST_SHOWN_AT,
+      String(now)
+    );
+    setRewardedNextInMs(REWARDED_COOLDOWN_MS);
+  }, []);
+
   // ---------- Interstitial wiring ----------
   useEffect(() => {
     if (!interstitial) return;
 
     let mounted = true;
 
-    const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-      if (!mounted) return;
-      loadingInterstitialRef.current = false;
-      setInterstitialLoaded(true);
+    const unsubLoaded = interstitial.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        if (!mounted) return;
+        loadingInterstitialRef.current = false;
+        setInterstitialLoaded(true);
 
-      // ✅ if user hit the threshold while we were loading, show now
-      if (pendingInterstitialShowRef.current) {
-        pendingInterstitialShowRef.current = false;
-        interstitial.show();
+        // ✅ if user hit the threshold while we were loading, show now
+        if (pendingInterstitialShowRef.current) {
+          pendingInterstitialShowRef.current = false;
+          interstitial.show();
+        }
       }
-    });
+    );
 
-    const unsubClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-      if (!mounted) return;
-      setInterstitialLoaded(false);
-      if (!loadingInterstitialRef.current) {
-        loadingInterstitialRef.current = true;
-        interstitial.load();
+    const unsubClosed = interstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        if (!mounted) return;
+        setInterstitialLoaded(false);
+        if (!loadingInterstitialRef.current) {
+          loadingInterstitialRef.current = true;
+          interstitial.load();
+        }
       }
-    });
+    );
 
-    const unsubError = interstitial.addAdEventListener(AdEventType.ERROR, () => {
-      if (!mounted) return;
-      setInterstitialLoaded(false);
-      loadingInterstitialRef.current = false; // allow retry later
-      pendingInterstitialShowRef.current = false; // cancel pending if failed
-    });
+    const unsubError = interstitial.addAdEventListener(
+      AdEventType.ERROR,
+      () => {
+        if (!mounted) return;
+        setInterstitialLoaded(false);
+        loadingInterstitialRef.current = false; // allow retry later
+        pendingInterstitialShowRef.current = false; // cancel pending if failed
+      }
+    );
 
     if (!loadingInterstitialRef.current) {
       loadingInterstitialRef.current = true;
@@ -113,32 +178,173 @@ export function useAds() {
     };
   }, [interstitial]);
 
+  useEffect(() => {
+    if (!rewardedInterstitial) return;
+
+    let mounted = true;
+
+    const unsubEarned = rewardedInterstitial.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      (reward: any) => {
+        if (onRewardRef.current) {
+
+          onRewardRef.current(Number(reward?.amount ?? 1), reward?.type);
+        }
+      }
+    );
+
+    // When ad is loaded
+    const unsubLoaded = rewardedInterstitial.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        if (!mounted) return;
+        loadingRewardedInterstitialRef.current = false;
+        setRewardedInterstitialLoaded(true);
+        console.log("[GAM] Rewarded Interstitial Loaded");
+      }
+    );
+
+    // When user closes the ad
+    const unsubClosed = rewardedInterstitial.addAdEventListener(
+      REWARDED_EVENTS.CLOSED,
+      () => {
+        if (!mounted) return;
+        console.log("[GAM] Rewarded Interstitial Closed");
+
+        setRewardedInterstitialLoaded(false);
+        // Reload for next use
+        if (!loadingRewardedInterstitialRef.current) {
+          loadingRewardedInterstitialRef.current = true;
+          rewardedInterstitial.load();
+        }
+      }
+    );
+
+    // When ad fails to load
+    const unsubError = rewardedInterstitial.addAdEventListener(
+      REWARDED_EVENTS.ERROR,
+      (error: any) => {
+        if (!mounted) return;
+        console.log("[GAM] Rewarded Interstitial ERROR:", error);
+
+        setRewardedInterstitialLoaded(false);
+        loadingRewardedInterstitialRef.current = false; // allow retry
+      }
+    );
+
+    // Initial load
+    if (!loadingRewardedInterstitialRef.current) {
+      loadingRewardedInterstitialRef.current = true;
+      rewardedInterstitial.load();
+    }
+
+    return () => {
+      mounted = false;
+      unsubLoaded();
+      unsubClosed();
+      unsubError();
+      unsubEarned();
+    };
+  }, [rewardedInterstitial]);
+
+  const showRewardedInterstitialWithCooldown = useCallback(
+    async (
+      onReward?: (amount: number, type?: string) => void,
+      onBlocked?: (msRemaining: number) => void,
+      onClosed?: () => void
+    ) => {
+      // 1. Cooldown check
+      const remaining = await getRewardedRemainingMs();
+      if (remaining > 0) {
+        setRewardedNextInMs(remaining);
+        onBlocked?.(remaining);
+        return false;
+      }
+
+      onRewardRef.current = onReward ?? null;
+      // 2. Check if RI is ready
+      if (!rewardedInterstitialLoaded || !rewardedInterstitial?.loaded) {
+        console.log("[GAM] Rewarded Interstitial not ready");
+        if (rewardedInterstitialLoadCount < 50) {
+          setRewardedInterstitialLoadCount(rewardedInterstitialLoadCount + 1);
+          rewardedInterstitial.load();
+        } else {
+          console.log(
+            "[GAM] Rewarded Interstitial load prevented (limit reached)"
+          );
+        }
+        return false;
+      }
+
+      // 4. Show ad
+      try {
+        await rewardedInterstitial.show();
+
+        // ⭐ cooldown must start only if earned
+        await startRewardCooldown();
+
+        return true; // 👉 TRUE only when rewarded
+      } catch (e) {
+        console.log("[GAM] show() failed:", e);
+        return false;
+      }
+    },
+    [
+      rewardedInterstitialLoaded,
+      rewardedInterstitial,
+      getRewardedRemainingMs,
+      startRewardCooldown,
+      rewardedInterstitialLoadCount,
+      setRewardedInterstitialLoadCount,
+    ]
+  );
+
   // ---------- Rewarded wiring (with compat) ----------
   useEffect(() => {
     if (!rewarded) return;
 
     let mounted = true;
 
-    const unsubLoaded = rewarded.addAdEventListener(REWARDED_EVENTS.LOADED, () => {
-      if (!mounted) return;
-      loadingRewardedRef.current = false;
-      setRewardedLoaded(true);
-    });
-
-    const unsubClosed = rewarded.addAdEventListener(REWARDED_EVENTS.CLOSED, () => {
-      if (!mounted) return;
-      setRewardedLoaded(false);
-      if (!loadingRewardedRef.current) {
-        loadingRewardedRef.current = true;
-        rewarded.load();
+    const unsubLoaded = rewarded.addAdEventListener(
+      REWARDED_EVENTS.LOADED,
+      () => {
+        if (!mounted) return;
+        loadingRewardedRef.current = false;
+        setRewardedLoaded(true);
       }
-    });
+    );
 
-    const unsubError = rewarded.addAdEventListener(REWARDED_EVENTS.ERROR, () => {
-      if (!mounted) return;
-      setRewardedLoaded(false);
-      loadingRewardedRef.current = false; // allow retry later
-    });
+    const unsubClosed = rewarded.addAdEventListener(
+      REWARDED_EVENTS.CLOSED,
+      () => {
+        if (!mounted) return;
+        setRewardedLoaded(false);
+        if (!loadingRewardedRef.current) {
+          loadingRewardedRef.current = true;
+          rewarded.load();
+        }
+      }
+    );
+
+    const unsubError = rewarded.addAdEventListener(
+      REWARDED_EVENTS.ERROR,
+      () => {
+        if (!mounted) return;
+        setRewardedLoaded(false);
+        loadingRewardedRef.current = false; // allow retry later
+      }
+    );
+
+          // One‑time reward listener
+    const unsubEarned = rewarded.addAdEventListener(
+        REWARDED_EVENTS.EARNED_REWARD,
+        (reward: any) => {
+         if (NormaloRewardRef.current) {
+          console.log("Normal calling");
+          NormaloRewardRef.current(Number(reward?.amount ?? 1), reward?.type);
+        }
+        }
+      );
 
     if (!loadingRewardedRef.current) {
       loadingRewardedRef.current = true;
@@ -148,6 +354,7 @@ export function useAds() {
     return () => {
       mounted = false;
       unsubLoaded();
+      unsubEarned();
       unsubClosed && unsubClosed();
       unsubError && unsubError();
     };
@@ -158,33 +365,6 @@ export function useAds() {
   }, [refreshRewardedRemaining]);
 
   // ---------- Public API ----------
-
-  // Show interstitial every N actions (default 5)
-  const maybeShowInterstitialOnAction = useCallback(
-    (key: string, threshold = DEFAULT_INTERSTITIAL_THRESHOLD) => {
-      // Prevent crash when interstitial is null (no ad ID or not created)
-      if (!interstitial) {
-        console.log("[GAM] No interstitial available — skipping show");
-        return;
-      }
-      const counters = countersRef.current;
-      counters[key] = (counters[key] ?? 0) + 1;
-
-      if (counters[key] % threshold === 0) {
-        if (interstitialLoaded && interstitial?.loaded) {
-          interstitial.show();
-        } else {
-          // ✅ remember to show once LOADED
-          pendingInterstitialShowRef.current = true;
-          if (!loadingInterstitialRef.current && interstitial?.load) {
-            loadingInterstitialRef.current = true;
-            interstitial.load();
-          }
-        }
-      }
-    },
-    [interstitialLoaded, interstitial]
-  );
 
   // Show rewarded if cooldown passed; otherwise call onBlocked(msRemaining)
   const showRewardedWithCooldown = useCallback(
@@ -200,39 +380,32 @@ export function useAds() {
         return false;
       }
 
-      if (!rewardedLoaded || !rewarded) {
-        if (!loadingRewardedRef.current && rewarded) {
-          loadingRewardedRef.current = true;
-          rewarded.load();
-        }
+
+       NormaloRewardRef.current = onReward ?? null;
+
+      // ❌ Rewarded not ready → try Rewarded Interstitial
+      if (!rewarded || !rewardedLoaded || !rewarded.loaded) {
+        console.log(
+          "[GAM] Rewarded not ready → using Rewarded Interstitial fallback"
+        );
+
         return false;
       }
 
-      // One‑time reward listener
-      const unsubEarned = rewarded.addAdEventListener(
-        REWARDED_EVENTS.EARNED_REWARD,
-        (reward: any) => {
-          onReward?.(Number(reward?.amount ?? 1), reward?.type);
-        }
-      );
+
 
       try {
         await rewarded.show();
-        const now = Date.now();
-        await AsyncStorage.setItem(
-          STORAGE_KEYS.REWARDED_LAST_SHOWN_AT,
-          String(now)
-        );
-        setRewardedNextInMs(REWARDED_COOLDOWN_MS);
+        console.log("NORMAL Reward");
+        await startRewardCooldown();
         return true;
       } finally {
         // Always reload after show() so we don't depend on CLOSED existing
-        unsubEarned();
         loadingRewardedRef.current = true;
         rewarded.load();
       }
     },
-    [rewardedLoaded, rewarded, getRewardedRemainingMs]
+    [rewardedLoaded, rewarded, getRewardedRemainingMs, startRewardCooldown]
   );
 
   // Optional helpers
@@ -256,7 +429,6 @@ export function useAds() {
 
     if (count >= 3) {
       // Remove instead of resetting
-      
 
       if (interstitialLoaded && interstitial?.loaded) {
         interstitial.show();
@@ -271,16 +443,26 @@ export function useAds() {
     }
   }, [interstitialLoaded, interstitial]);
 
-  return {
+  const value: AdsContextValue = {
     interstitialLoaded,
     rewardedLoaded,
-    rewardedNextInMs,
-    maybeShowInterstitialOnAction,
+    getRewardedRemainingMs,
+    rewardedInterstitialLoadCount,
     showRewardedWithCooldown,
+    rewardedNextInMs,
     refreshRewardedRemaining,
-    // helpers
     resetRewardedCooldown,
-    canShowRewardedNow,
     showInterstitialEvery3Clicks,
+    showRewardedInterstitialWithCooldown,
   };
+
+  return React.createElement(AdsContext.Provider, { value }, children);
+};
+
+export function useAds() {
+  const ctx = useContext(AdsContext);
+  if (!ctx) {
+    throw new Error("useAds must be used within an AdsProvider");
+  }
+  return ctx;
 }

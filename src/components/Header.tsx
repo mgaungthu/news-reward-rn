@@ -12,6 +12,7 @@ interface HeaderProps {
   showBack?: boolean;
   backgroundColor?: string;
   textColor?: string;
+  onBackPress?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   showBack = true,
   backgroundColor,
   textColor,
+  onBackPress,
 }) => {
 
   const [cameFromRef,setCameFromRef]= useState(false)
@@ -51,10 +53,15 @@ export const Header: React.FC<HeaderProps> = ({
       {showBack ? (
         <TouchableOpacity
           onPress={() => {
+            if (onBackPress) {
+              onBackPress(); // custom handler if provided
+              return;
+            }
+
             if (cameFromRef) {
-              router.replace("/"); // redirect to home if referral
+              router.replace("/");
             } else {
-              router.back(); // normal back navigation
+              router.back();
             }
           }}
           style={{ justifyContent: "center", height: "100%", width: 40 }}

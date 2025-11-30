@@ -129,7 +129,7 @@ function TabLayout() {
 const styles = StyleSheet.create({
   bannerContainer: {
     position: "absolute",
-    bottom: 60, // roughly tab height + some extra space
+    bottom: 69, // roughly tab height + some extra space
     width: "100%",
     alignItems: "center",
     zIndex: 10,

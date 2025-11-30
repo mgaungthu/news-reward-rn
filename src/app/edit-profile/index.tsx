@@ -103,9 +103,10 @@ export default function EditProfile() {
               Email
             </Text>
             <TextInput
+              editable={false}
               style={[
                 styles.input,
-                { color: colors.text, borderColor: colors.primary },
+                { color: colors.text, borderColor: colors.primary, opacity:0.7, backgroundColor:"#ddd", paddingHorizontal: scale(10) },
               ]}
               value={email}
               onChangeText={setEmail}

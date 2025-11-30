@@ -1,34 +1,26 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
-  Image,
-  ScrollView,
   Share,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
-  useWindowDimensions,
+  useWindowDimensions
 } from "react-native";
-import RenderHtml from "react-native-render-html";
 
 import Skeleton from "react-native-reanimated-skeleton";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getPostById } from "@/api/postApi";
-import { BannerAdComponent } from "@/components/BannerAdComponent";
+import DetailComponent from "@/components/DetailComponent";
 import { Header } from "@/components/Header";
-import NativeAdCard from "@/components/NativeAdCard";
 import { PostWebView } from "@/components/PostWebView";
-import { VimeoPlayer } from "@/components/VimeoPlayer";
 import { useAuth } from "@/context/AuthContext";
+import { useAdLoadingStore } from "@/store/adLoadingSlice";
 import { useFavoritesStore } from "@/store/useFavoritesStore";
 import { useTheme } from "@/theme/ThemeProvider";
-import { isTablet } from "@/utils/lib";
-import { prettyDate } from "@/utils/prettyDate";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 
 interface UserClaim {
@@ -43,7 +35,7 @@ export default function PostsDetail() {
   const [showWebView, setShowWebView] = useState(false);
   const { width } = useWindowDimensions();
   const { isLoggedIn, user } = useAuth();
-
+  const { adLoading, setAdLoading } = useAdLoadingStore();
   const {
     data: post,
     isLoading,
@@ -54,7 +46,6 @@ export default function PostsDetail() {
     queryFn: () => getPostById(id as string),
     enabled: !!id,
   });
-
   const addFavorite = useFavoritesStore((state) => state.addFavorite);
   const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
   const isFavorite = useFavoritesStore(
@@ -64,6 +55,10 @@ export default function PostsDetail() {
       [post?.id]
     )
   );
+
+  useEffect(() => {
+    setAdLoading(true);
+  }, []);
 
   const toggleFavorite = useCallback(() => {
     if (!post) {
@@ -100,7 +95,7 @@ export default function PostsDetail() {
         <View style={{ height: "100%" }}>
           <Skeleton
             isLoading={isLoading}
-            containerStyle={{flex:1}}
+            containerStyle={{ flex: 1 }}
             layout={[
               {
                 key: "firstLine",
@@ -194,10 +189,7 @@ export default function PostsDetail() {
                 borderRadius: 10,
               },
             ]}
-          >
-            <Text>Your content</Text>
-            <Text>Other content</Text>
-          </Skeleton>
+          />
         </View>
       </SafeAreaView>
     );
@@ -237,6 +229,7 @@ export default function PostsDetail() {
     );
   }
 
+
   const sharePost = async () => {
     try {
       const webShareUrl = `https://lotaya.mandalayads.io/post-open?post_id=${post.id}`;
@@ -253,130 +246,17 @@ export default function PostsDetail() {
 
   // Default post detail screen
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <Header
-        title={
-          post.title?.length > 30
-            ? post.title.slice(0, 30) + "..."
-            : post.title || "News Detail"
-        }
-      />
-
-      <ScrollView
-        style={[styles.scrollView, { backgroundColor: colors.background }]}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-      >
-        {post.is_vip ? (
-          <View style={{ marginVertical: 20 }}>
-            {post.vimeo_url && <VimeoPlayer vimeoUrl={post.vimeo_url} />}
-          </View>
-        ) : (
-          <Image
-            source={{ uri: post.feature_image_url }}
-            style={styles.featureImage}
-          />
-        )}
-
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: scale(10),
-            marginRight: scale(5),
-            marginLeft: scale(5),
-          }}
-        >
-          {/* Created At */}
-          <Text style={{ fontSize: 12, color: colors.muted }}>
-            {prettyDate(post.created_at) ?? ""}
-          </Text>
-
-          {/* Action Buttons */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: scale(16),
-            }}
-          >
-            {isLoggedIn && (
-              <TouchableOpacity onPress={toggleFavorite}>
-                <Ionicons
-                  name={isFavorite ? "heart" : "heart-outline"}
-                  size={scale(18)}
-                  color={isFavorite ? colors.primary : colors.text}
-                />
-              </TouchableOpacity>
-            )}
-
-            {/* Share Button */}
-            <TouchableOpacity onPress={sharePost}>
-              <Ionicons
-                name="share-social-outline"
-                size={scale(17)}
-                color={colors.text}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.contentContainer}>
-          <Text style={[styles.titleText, { color: colors.text }]}>
-            {post.title}
-          </Text>
-
-          <NativeAdCard/>
-
-          <RenderHtml
-            contentWidth={width}
-            source={{ html: post.body || post.content }}
-            tagsStyles={{
-              p: { color: colors.textSecondary, fontSize: 16, lineHeight: 24 },
-              strong: { fontWeight: "bold", color: colors.text },
-              a: { color: colors.primary },
-            }}
-          />
-
-          {!post.is_vip && isLoggedIn && (
-            <TouchableOpacity
-              style={[
-                styles.pointsButton,
-                {
-                  backgroundColor: hasUserClaimed(post)
-                    ? colors.textSecondary
-                    : colors.primary,
-                  opacity: hasUserClaimed(post) ? 0.6 : 1,
-                  alignSelf: "center",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5,
-                },
-              ]}
-              disabled={hasUserClaimed(post)}
-              onPress={() => setShowWebView(true)}
-            >
-              <Text
-                style={[styles.pointsButtonText, { color: colors.background }]}
-              >
-                {hasUserClaimed(post) ? "Claimed" : "Claim your point"}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <NativeAdCard/>
-      </ScrollView>
-
-      <BannerAdComponent />
-    </SafeAreaView>
+   <DetailComponent
+      post={post}
+      colors={colors}
+      toggleFavorite={toggleFavorite}
+      isFavorite={isFavorite}
+      isLoggedIn={isLoggedIn}
+      sharePost={sharePost}
+      hasUserClaimed={hasUserClaimed}
+      setShowWebView={setShowWebView}
+      width={width}
+    />
   );
 }
 
@@ -390,68 +270,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: scale(16),
   },
-  scrollView: {
-    flex: 1,
-  },
-  featureImage: {
-    width: "100%",
-    height: isTablet() ? verticalScale(220) : verticalScale(140),
-    resizeMode: "cover",
-    borderRadius: 10,
-    marginTop: scale(10),
-  },
-  contentContainer: {
-    paddingVertical: scale(10),
-  },
-  titleText: {
-    fontSize: moderateScale(18),
-    fontWeight: "bold",
-    marginBottom: verticalScale(8),
-  },
-  errorText: {
+    errorText: {
     fontSize: moderateScale(16),
-  },
-  webViewLoading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  pointsButton: {
-    // Removed position: "absolute",
-    // Removed bottom, right positioning
-    width: scale(120),
-    height: scale(35),
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderRadius: 5,
-    marginTop: verticalScale(10),
-  },
-  pointsButtonText: {
-    fontWeight: "600",
-    fontSize: moderateScale(12),
-  },
-  detectButton: {
-    position: "absolute",
-    bottom: verticalScale(16),
-    left: scale(16),
-    right: scale(16),
-    height: verticalScale(48),
-    borderRadius: scale(10),
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  detectButtonText: {
-    fontSize: moderateScale(14),
-    fontWeight: "500",
   },
 });

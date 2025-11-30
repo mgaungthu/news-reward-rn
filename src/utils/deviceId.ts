@@ -1,5 +1,6 @@
 import * as Application from "expo-application";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
 const DEVICE_KEY = "device_id";
 
@@ -13,12 +14,20 @@ export const getDeviceId = async (): Promise<string> => {
   // 2. Generate the device ID
   let newId = "";
 
-  const androidId =  Application.getAndroidId();
-  if (androidId) {
-    newId = androidId;
+  if (Platform.OS === "android") {
+    const androidId = Application.getAndroidId();
+    if (androidId) {
+      newId = androidId;
+    }
   } else {
     const iosId = await Application.getIosIdForVendorAsync();
-    newId = iosId ?? "unknown-device";
+    if (iosId) {
+      newId = iosId;
+    }
+  }
+
+  if (!newId) {
+    newId = "unknown-device";
   }
 
   // 3. Save to SecureStore (encrypted)

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import {
@@ -8,17 +7,18 @@ import {
   NativeAsset,
   NativeAssetType,
   NativeMediaAspectRatio,
-  NativeMediaView
+  NativeMediaView,
 } from "react-native-google-mobile-ads";
 import Skeleton from "react-native-reanimated-skeleton";
 
+import { useAdLoadingStore } from "@/store/adLoadingSlice";
 import { useSettingsStore } from "@/store/settingsSlice";
 import { verticalScale } from "react-native-size-matters";
 
 const NativeAdCard: React.FC = () => {
   const [nativeAd, setNativeAd] = useState<NativeAd | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const { setAdLoading } = useAdLoadingStore();
 
   const { ad_native_id } = useSettingsStore();
   if (!ad_native_id) {
@@ -32,19 +32,22 @@ const NativeAdCard: React.FC = () => {
       aspectRatio: NativeMediaAspectRatio.ANY,
       startVideoMuted: true,
     })
-      .then(ad => {
+      .then((ad) => {
         if (!isMounted) {
           ad.destroy();
           return;
         }
         setNativeAd(ad);
-        setIsLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log("[NativeAd] load error:", err);
+        setIsLoading(false);
+        setAdLoading(false);
+      }).finally(()=>{
         setIsLoading(false);
       });
 
+      
     return () => {
       isMounted = false;
       if (nativeAd) {
@@ -70,33 +73,41 @@ const NativeAdCard: React.FC = () => {
     };
   }, [nativeAd]);
 
+  // Mark ad as fully loaded only when assets are ready
+ useEffect(() => {
+  if (!nativeAd) return;
+
+  if (nativeAd.headline) {
+    console.log("[NativeAd] fully loaded");
+    setIsLoading(false);
+    setAdLoading(false);
+  }
+}, [nativeAd]);
+
   if (isLoading) {
     return (
       <View style={styles.card}>
         {/* Simple skeleton */}
         <Skeleton
-            isLoading={isLoading}
-            containerStyle={{flex:1}}
-            layout={[
-              {
-                key: "firstLine",
-                width: "100%",
-                height: 180,
-                marginBottom: verticalScale(15),
-                borderRadius: 10,
-              },
-              {
-                key: "secLine",
-                width: "100%",
-                height: 10,
-                borderRadius: 10,
-              },
-              
-            ]}
-          >
-            <Text>Your content</Text>
-            <Text>Other content</Text>
-          </Skeleton>
+          isLoading={isLoading}
+          containerStyle={{ flex: 1 }}
+          layout={[
+            {
+              key: "firstLine",
+              width: "100%",
+              height: 180,
+              marginBottom: verticalScale(15),
+              borderRadius: 10,
+            },
+            {
+              key: "secLine",
+              width: "100%",
+              height: 10,
+              borderRadius: 10,
+            },
+          ]}
+        >
+        </Skeleton>
       </View>
     );
   }
@@ -113,10 +124,7 @@ const NativeAdCard: React.FC = () => {
           {/* Icon */}
           {nativeAd.icon && (
             <NativeAsset assetType={NativeAssetType.ICON}>
-              <Image
-                source={{ uri: nativeAd.icon.url }}
-                style={styles.icon}
-              />
+              <Image source={{ uri: nativeAd.icon.url }} style={styles.icon} />
             </NativeAsset>
           )}
 
@@ -147,10 +155,7 @@ const NativeAdCard: React.FC = () => {
 
         {/* Media (image / video) */}
         <View style={styles.mediaContainer}>
-          <NativeMediaView
-            resizeMode="cover"
-            style={styles.media}
-          />
+          <NativeMediaView resizeMode="cover" style={styles.media} />
         </View>
 
         {/* "Sponsored" label – required by policy */}

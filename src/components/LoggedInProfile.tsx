@@ -2,7 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useState } from "react";
 import {
   Alert,
+  Animated,
+  Easing,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -28,35 +31,78 @@ export function LoggedInProfile() {
 
   const { colors } = useTheme();
   const router = useRouter();
-  const { user, logout , getUser} = useAuth();
+  const { user, logout, getUser } = useAuth();
 
-  const { showRewardedWithCooldown } = useAds();
+  const {
+    showRewardedWithCooldown,
+    showRewardedInterstitialWithCooldown,
+    getRewardedRemainingMs,
+  } = useAds();
 
+  const shakeAnim = useState(new Animated.Value(0))[0];
+  const triggerShake = () => {
+    shakeAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(shakeAnim, {
+        toValue: 1,
+        duration: 80,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: -1,
+        duration: 80,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 1,
+        duration: 80,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnim, {
+        toValue: 0,
+        duration: 80,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
-
+  const goToReset = async () => {
+    console.log("Normal api called");
+    Alert.alert("Now, You’re ready to get new points!");
+    await resetUserClaims();
+  };
 
   const handlePress = useCallback(async () => {
-    if (loadingReward) return;      // ⛔ prevents double tap
+    triggerShake();
 
-    setLoadingReward(true);
-
-    const success = await showRewardedWithCooldown(
-      async () => {
-        Alert.alert("Now, You’re ready to get new points!");
-      },
-      (msRemaining) => {
-        const minutes = Math.ceil(msRemaining / 60000);
-        Alert.alert("Please wait", `Try again in ${minutes} minute(s).`);
-      }
-    );
-
-    if (success) {
-      await resetUserClaims();
-      Alert.alert("Now, You’re ready to get new points!");
+    const res = await getRewardedRemainingMs();
+    if (res) {
+      const minutes = Math.ceil(res / 60000);
+      Alert.alert("Please wait", `Try again in ${minutes} minute(s).`);
+      return;
     }
 
-    setLoadingReward(false);
-  }, [showRewardedWithCooldown, loadingReward]);
+    // 2. Try to show Rewarded
+    const success = await showRewardedWithCooldown();
+
+    if (!success) {
+      // 3. Rewarded FAILED → User gesture (allowed by Google)
+      const res = await showRewardedInterstitialWithCooldown();
+      if (res) {
+        goToReset();
+      }
+    } else {
+      goToReset();
+    }
+  }, [
+    loadingReward,
+    showRewardedWithCooldown,
+    showRewardedInterstitialWithCooldown,
+  ]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -68,7 +114,8 @@ export function LoggedInProfile() {
     setRefreshing(false);
   }, [getUser]);
 
-  const appVersion = Application.nativeApplicationVersion || "1.0.0";
+  const appVersion =
+    Platform.OS === "ios" ? "1.1.6" : Application.nativeApplicationVersion;
 
   return (
     <SafeAreaView
@@ -173,7 +220,10 @@ export function LoggedInProfile() {
             }}
           >
             {/* Referral */}
-            <TouchableOpacity onPress={() => router.push('/referral')} style={styles.listItem}>
+            <TouchableOpacity
+              onPress={() => router.push("/referral")}
+              style={styles.listItem}
+            >
               <View style={styles.listLeft}>
                 <Ionicons
                   name="copy-outline"
@@ -216,24 +266,37 @@ export function LoggedInProfile() {
             </TouchableOpacity>
 
             {/* Reset All Posts */}
-            <TouchableOpacity onPress={handlePress} style={styles.listItem}>
-              <View style={styles.listLeft}>
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    translateX: shakeAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-8, 8],
+                    }),
+                  },
+                ],
+              }}
+            >
+              <TouchableOpacity onPress={handlePress} style={styles.listItem}>
+                <View style={styles.listLeft}>
+                  <Ionicons
+                    name="refresh-outline"
+                    size={22}
+                    color={colors.primary}
+                    style={styles.listIcon}
+                  />
+                  <Text style={[styles.listText, { color: colors.text }]}>
+                    Reset All Posts
+                  </Text>
+                </View>
                 <Ionicons
-                  name="refresh-outline"
-                  size={22}
-                  color={colors.primary}
-                  style={styles.listIcon}
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.textSecondary}
                 />
-                <Text style={[styles.listText, { color: colors.text }]}>
-                  Reset All Posts
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </Animated.View>
 
             {/* Version */}
             <View style={styles.listItem}>
@@ -248,7 +311,9 @@ export function LoggedInProfile() {
                   Version
                 </Text>
               </View>
-              <Text style={{ color: colors.textSecondary }}>v {appVersion}</Text>
+              <Text style={{ color: colors.textSecondary }}>
+                v {appVersion}
+              </Text>
             </View>
 
             {/* Logout */}
@@ -270,8 +335,6 @@ export function LoggedInProfile() {
                 color={colors.textSecondary}
               />
             </TouchableOpacity>
-
-
           </View>
         </View>
       </ScrollView>

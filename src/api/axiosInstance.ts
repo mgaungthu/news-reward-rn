@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
 });
 
-
+console.log(API_BASE_URL)
 
 // Add request interceptor
 axiosInstance.interceptors.request.use(

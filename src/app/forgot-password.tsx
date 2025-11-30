@@ -1,44 +1,78 @@
+import { forgotPassword } from "@/api/authApi";
 import { BannerAdComponent } from "@/components/BannerAdComponent";
 import { CustomModal } from "@/components/CustomModal";
 import { Header } from "@/components/Header";
-import { ERROR_MESSAGES } from "@/constants/messages";
-import { useSettingsStore } from "@/store/settingsSlice";
 import { useTheme } from "@/theme/ThemeProvider";
 import { isTablet } from "@/utils/lib";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Text,
+  TextInput,
+  TouchableOpacity,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const isValidEmail = (email: string) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
 
 export default function ForgotPassword() {
 
   const router = useRouter();
   const { colors } = useTheme();
-  const { email } = useSettingsStore();
 
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"success" | "error" | "info" | null>(null);
   const [modalMessage, setModalMessage] = useState("");
+  const [email, setEmail] = useState("");
 
   const handleSendEmail = async () => {
+    if (!email) {
+      setModalType("error");
+      setModalMessage("Please enter your email");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setModalType("error");
+      setModalMessage("Please enter a valid email address");
+      setModalVisible(true);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simulate sending email with a timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await forgotPassword({ email });
+
+      if (res?.status === false) {
+        if (res.errors?.email && Array.isArray(res.errors.email)) {
+          setModalType("error");
+          setModalMessage(res.errors.email[0]);
+          setModalVisible(true);
+          return;
+        }
+
+        setModalType("error");
+        setModalMessage(res.message || "Failed to send reset code.");
+        setModalVisible(true);
+        return;
+      }
+
       setModalType("success");
-      setModalMessage("Password reset email sent successfully.");
+      setModalMessage(res.message || "Password reset code sent to your email.");
       setModalVisible(true);
-    } catch (error) {
-      console.error("Failed to send password reset email:", error);
+    } catch (error: any) {
       setModalType("error");
-      setModalMessage(ERROR_MESSAGES.CHANGE_PASSWORD_FAILED);
+      setModalMessage("Something went wrong. Please try again.");
       setModalVisible(true);
     } finally {
       setLoading(false);
@@ -48,7 +82,7 @@ export default function ForgotPassword() {
   const handleModalClose = () => {
     setModalVisible(false);
     if (modalType === "success") {
-      router.back();
+      router.push(`/reset-password-otp?email=${encodeURIComponent(email)}`);
     }
   };
 
@@ -82,24 +116,32 @@ export default function ForgotPassword() {
               marginBottom: verticalScale(8),
             }}
           >
-            Send forgot password email
+            Reset your password
           </Text>
           <Text style={{ textAlign: "center", color: colors.textSecondary || "#666" }}>
-            Please send email to admin about forgetting your password and reset!
+            Enter your email and we will send you a reset code.
           </Text>
 
-          <Text
+          <TextInput
+            value={email}
+            placeholder="Enter your email"
+            placeholderTextColor={"#ddd"}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            onChangeText={(t) => setEmail(t)}
             style={{
-              textAlign: "center",
-              color: colors.text,
+              backgroundColor: colors.background,
+              paddingVertical: verticalScale(10),
+              paddingHorizontal: scale(15),
+              borderRadius: moderateScale(8),
               fontSize: moderateScale(16),
-              paddingVertical: verticalScale(12),
+              color: colors.text,
+              borderWidth: 1,
+              borderColor: colors.border || "#ccc",
             }}
-          >
-            {email}
-          </Text>
+          />
 
-          {/* <TouchableOpacity
+          <TouchableOpacity
             onPress={handleSendEmail}
             disabled={loading}
             style={{
@@ -115,10 +157,10 @@ export default function ForgotPassword() {
               <ActivityIndicator color={colors.background} />
             ) : (
               <Text style={{ color: colors.background, fontWeight: "600" }}>
-                Send Password Reset Email
+                Send Reset Code
               </Text>
             )}
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
 
         <BannerAdComponent/>

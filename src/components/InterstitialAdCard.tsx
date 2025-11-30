@@ -1,3 +1,11 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router"; // 👈 Add this
+import React, { memo, useCallback } from "react";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import Skeleton from "react-native-reanimated-skeleton";
+import { scale } from "react-native-size-matters";
+import { CustomModal } from "./CustomModal";
+
 import { buyVipPost } from "@/api/postApi";
 import { SUCCESS_MESSAGES } from "@/constants/messages";
 import { useAuth } from "@/context/AuthContext";
@@ -7,12 +15,6 @@ import { useVipPostStore } from "@/store/useVipPostStore";
 import { useTheme } from "@/theme/ThemeProvider";
 import { handleApiError } from "@/utils/handleApiError";
 import { prettyDate } from "@/utils/prettyDate";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router"; // 👈 Add this
-import React, { memo, useCallback } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { scale } from "react-native-size-matters";
-import { CustomModal } from "./CustomModal";
 
 type Props = {
   i: number;
@@ -46,7 +48,7 @@ function InterstitialAdCardBase({
   created_at,
   is_vip=false
 }: Props) {
-  const { showInterstitialEvery3Clicks } = useAds();
+  
   const { colors } = useTheme();
   const router = useRouter(); // 👈 for navigation
   const { isLoggedIn, getUser } = useAuth();
@@ -54,6 +56,9 @@ function InterstitialAdCardBase({
   const [buyModalVisible, setBuyModalVisible] = React.useState(false);
   const [buyMessage, setBuyMessage] = React.useState("");
   const [buyConfirmVisible, setBuyConfirmVisible] = React.useState(false);
+  const [imgLoading, setImgLoading] = React.useState(true);
+
+  const { showInterstitialEvery3Clicks } = useAds();
 
   const { fetchUserVipPosts } = useVipPostStore();
   const addFavorite = useFavoritesStore((state) => state.addFavorite);
@@ -170,6 +175,20 @@ function InterstitialAdCardBase({
       >
         <View style={styles.imageWrapper}>
           <View style={styles.imageContainer}>
+            {imgLoading && (
+              <Skeleton
+                isLoading={true}
+                layout={[
+                  {
+                    key: "firstLine",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 10,
+                  },
+                ]}
+              />
+            )}
+
             <Image
               source={{ uri: feature_image_url }}
               style={{
@@ -184,6 +203,7 @@ function InterstitialAdCardBase({
                   : 1,
               }}
               resizeMode="cover"
+              onLoad={() => setImgLoading(false)}
             />
             {readStatus && (
                 <View style={styles.claimedBadge}>

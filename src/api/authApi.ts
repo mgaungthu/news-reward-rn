@@ -10,8 +10,23 @@ export const registerUser = async (data: {
     const res = await axiosInstance.post("/register", data);
     return res.data;
   } catch (error: any) {
-    console.log("registerUser Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Request failed");
+    const server = error.response?.data;
+    console.log("registerUser Error:", server || error.message);
+
+    // Return validation errors (e.g., email already exists)
+    if (server?.errors) {
+      return {
+        status: false,
+        errors: server.errors,
+        message: server.message || "Validation error",
+      };
+    }
+
+    // General API error
+    return {
+      status: false,
+      message: server?.message || "Request failed",
+    };
   }
 };
 
@@ -24,8 +39,8 @@ export const loginUser = async (data: {
     const res = await axiosInstance.post("/login", data);
     return res.data;
   } catch (error: any) {
-    console.log("loginUser Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Request failed");
+
+    throw new Error(error?.message || "Request failed");
   }
 };
 
@@ -99,6 +114,74 @@ export const validateIAP = async (data: {
     return res.data;
   } catch (error: any) {
     console.log("validateIAP Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Request failed");
+  }
+};
+
+export const verifyEmail = async (data: {
+  email: string;
+  code: string;
+}) => {
+  try {
+    const res = await axiosInstance.post("/verify-email", data);
+    return res.data;
+  } catch (error: any) {
+    console.log("verifyEmail Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Request failed");
+  }
+};
+
+export const resendOtp = async (data: { email: string }) => {
+  try {
+    const res = await axiosInstance.post("/resend-otp", data);
+    return res.data;
+  } catch (error: any) {
+    console.log("resendOtp Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Request failed");
+  }
+};
+
+export const forgotPassword = async (data: { email: string }) => {
+  try {
+    const res = await axiosInstance.post("/forgot-password", data);
+    return res.data;
+  } catch (error: any) {
+    const server = error.response?.data;
+    console.log("forgotPassword Error:", server || error.message);
+
+    // Return backend validation errors
+    if (server?.errors) {
+      return {
+        status: false,
+        errors: server.errors,
+        message: server.message || "Validation error",
+      };
+    }
+
+    // Return general error
+    return {
+      status: false,
+      message: server?.message || "Request failed",
+    };
+  }
+};
+
+export const verifyResetOtp = async (data: { email: string; code: string }) => {
+  try {
+    const res = await axiosInstance.post("/verify-reset-otp", data);
+    return res.data;
+  } catch (error: any) {
+    console.log("verifyResetOtp Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Request failed");
+  }
+};
+
+export const resetPassword = async (data: { email: string; code: string; new_password: string }) => {
+  try {
+    const res = await axiosInstance.post("/reset-password", data);
+    return res.data;
+  } catch (error: any) {
+    console.log("resetPassword Error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Request failed");
   }
 };

@@ -4,13 +4,20 @@ import { SplashScreen, Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+SplashScreen.preventAutoHideAsync();
+
+import { AdsProvider } from "@/hooks/useAds";
 
 import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
+import { PreventModal } from "@/components/PreventModal";
 import SecondSplash from "@/components/SecondSplash";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
-
+import OfflineBanner from "@/components/OfflineBanner";
+import * as Application from "expo-application";
+import { Platform, Linking as RNLinking } from "react-native";
+import VersionCheck from "react-native-version-check";
 
 const queryClient = new QueryClient();
 
@@ -18,8 +25,9 @@ export default function Layout() {
   const router = useRouter();
   const lastUrlRef = useRef<string | null>(null);
 
-    const [showSecondSplash, setShowSecondSplash] = useState(true);
-
+  const [showSecondSplash, setShowSecondSplash] = useState(true);
+  const [forceUpdate, setForceUpdate] = useState(false);
+  const [storeUrl, setStoreUrl] = useState("");
 
   const navigateToUrl = useCallback(
     (url: string | null | undefined) => {
@@ -77,28 +85,104 @@ export default function Layout() {
 
   useEffect(() => {
     const setup = async () => {
-      await new Promise(res => setTimeout(res, 500)); // optional small delay
-      SplashScreen.hideAsync();
+      await new Promise((res) => setTimeout(res, 800)); 
+      await SplashScreen.hideAsync();
       setTimeout(() => {
         setShowSecondSplash(false);
-      }, 2000); // show second splash 1.5 sec
+      }, 1200);
     };
     setup();
   }, []);
 
-  
+  useEffect(() => {
+    const checkUpdate = async () => {
+      try {
+        let latest = "";
+        let current = Application.nativeApplicationVersion || "";
+
+        try {
+          latest = await VersionCheck.getLatestVersion();
+        } catch (err) {
+          console.log("Failed to fetch latest version:", err);
+          return; // prevent crash
+        }
+
+        if (!latest || !current) {
+          console.log("Version info missing, skipping update check.");
+          return;
+        }
+
+        let url = "";
+
+        if (Platform.OS === "ios") {
+          try {
+            url = await VersionCheck.getAppStoreUrl();
+          } catch (err) {
+            console.log("iOS store URL fetch failed, using fallback:", err);
+            url = "https://apps.apple.com/us/app/lotaya-dinga/id6754815852"; // TODO: replace with your real App Store ID
+          }
+        } else {
+          try {
+            url = await VersionCheck.getPlayStoreUrl();
+          } catch (err) {
+            console.log("Android store URL fetch failed, using fallback:", err);
+            url =
+              "https://play.google.com/store/apps/details?id=com.mandalayads.lotayadinga";
+          }
+        }
+
+        setStoreUrl(url);
+
+        let updateNeeded = { isNeeded: false };
+
+        try {
+          updateNeeded = await VersionCheck.needUpdate({
+            currentVersion: current,
+            latestVersion: latest,
+          });
+        } catch (err) {
+          console.log("needUpdate failed:", err);
+          return;
+        }
+
+        console.log(updateNeeded);
+
+        if (updateNeeded.isNeeded) {
+          setForceUpdate(true);
+        }
+      } catch (e) {
+        console.log("Version check failed:", e);
+      }
+    };
+
+    checkUpdate();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
-          {!showSecondSplash &&<AppOpenAdComponent />}
-          <StatusBar style="dark" />
-          <SecondSplash showSecondSplash={showSecondSplash} />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-            }}
-          />
+          <AdsProvider>
+            <PreventModal
+              visible={forceUpdate}
+              title="Update Required"
+              message="A new version of the app is available. Please update to continue."
+              buttonText="Update Now"
+              buttonColor="#E53935"
+              onPress={() => RNLinking.openURL(storeUrl)}
+            />
+            {!showSecondSplash && (
+              <AppOpenAdComponent />
+            )}
+            <StatusBar style="dark" />
+            <SecondSplash showSecondSplash={showSecondSplash} />
+            <OfflineBanner />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            />
+          </AdsProvider>
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>

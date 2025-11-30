@@ -25,6 +25,7 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"success" | "error" | null>(null);
@@ -39,6 +40,43 @@ export default function Register() {
   }, [params.ref]);
 
   const handleRegister = async () => {
+    // ⭐ Basic validation before registering
+    if (!name.trim()) {
+      setModalType("error");
+      setModalMessage("Name is required.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!email.trim()) {
+      setModalType("error");
+      setModalMessage("Email is required.");
+      setModalVisible(true);
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setModalType("error");
+      setModalMessage("Please enter a valid email address.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!password.trim()) {
+      setModalType("error");
+      setModalMessage("Password is required.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (password.length < 6) {
+      setModalType("error");
+      setModalMessage("Password must be at least 6 characters long.");
+      setModalVisible(true);
+      return;
+    }
     if (!acceptedTerms) {
       setModalType("error");
       setModalMessage("Please accept the Terms of Use and Privacy Policy.");
@@ -46,12 +84,26 @@ export default function Register() {
       return;
     }
     try {
-      await registerUser({
+      const res = await registerUser({
         name,
         email,
         password,
         referral_code: referralCode.trim() || undefined,
       });
+
+      // ❌ Validation error such as "email already taken"
+      if (res?.errors) {
+        const firstError =
+          res.errors.email?.[0] ||
+          res.errors.name?.[0] ||
+          res.errors.password?.[0] ||
+          "Registration failed.";
+
+        setModalType("error");
+        setModalMessage(firstError);
+        setModalVisible(true);
+        return;
+      }
       setModalType("success");
       setModalMessage("Registration successful!");
       setModalVisible(true);
@@ -60,6 +112,7 @@ export default function Register() {
         router.replace("/login");
       }, 1500);
     } catch (err: any) {
+      console.log(err, 'here')
       setModalType("error");
       setModalMessage(err.response?.data?.message || "Error");
       setModalVisible(true);
@@ -138,21 +191,36 @@ export default function Register() {
               color: colors.text,
             }}
           />
-          <TextInput
-            placeholder="Enter your password"
-            placeholderTextColor={colors.textSecondary || "#999"}
-            autoCapitalize="none"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
+          <View
             style={{
+              flexDirection: "row",
+              alignItems: "center",
               borderBottomWidth: 1,
               borderColor: colors.border,
               marginBottom: verticalScale(20),
-              paddingVertical: verticalScale(10),
-              color: colors.text,
             }}
-          />
+          >
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor={colors.textSecondary || "#999"}
+              autoCapitalize="none"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              style={{
+                flex: 1,
+                paddingVertical: verticalScale(10),
+                color: colors.text,
+              }}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons
+                name={showPassword ? "eye" : "eye-off"}
+                size={moderateScale(20)}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
 
           <TextInput
             placeholder="Referral code (optional)"

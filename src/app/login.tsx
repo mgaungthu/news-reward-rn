@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/theme/ThemeProvider";
 import { isTablet } from "@/utils/lib";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -29,35 +30,60 @@ export default function Login() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"success" | "error" | null>(null);
   const [modalMessage, setModalMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    try {
-      await login(email, password);
-      setModalType("success");
-      setModalMessage("Login successful!");
-      setModalVisible(true);
+  // Basic validation
+  if (!email.trim()) {
+    setModalType("error");
+    setModalMessage("Please enter your email.");
+    setModalVisible(true);
+    return;
+  }
 
-      setTimeout(() => {
-        setModalVisible(false);
-        router.replace("/");
-      }, 1200);
-    } catch (err: any) {
-      console.log(err);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    setModalType("error");
+    setModalMessage("Please enter a valid email address.");
+    setModalVisible(true);
+    return;
+  }
 
-      let message = ERROR_MESSAGES.UNKNOWN_ERROR;
+  if (!password.trim()) {
+    setModalType("error");
+    setModalMessage("Please enter your password.");
+    setModalVisible(true);
+    return;
+  }
 
-      // Check if response exists and has 401 status
-      if (err.response && err.response.status === 401) {
-        message = ERROR_MESSAGES.LOGIN_INVALID;
-      } else if (err.message) {
-        message = ERROR_MESSAGES.LOGIN_FAILED;
-      }
+  try {
+    await login(email, password);
 
-      setModalType("error");
-      setModalMessage(message);
-      setModalVisible(true);
+    setModalType("success");
+    setModalMessage("Login successful!");
+    setModalVisible(true);
+
+    setTimeout(() => {
+      setModalVisible(false);
+      router.replace("/");
+    }, 1200);
+  } catch (err: any) {
+    
+
+    // If AuthContext threw "email_not_verified"
+    if (err?.message === "email_not_verified") {
+      return router.push({
+        pathname: "/verify-email",
+        params: { email },
+      });
     }
-  };
+
+    // Otherwise show normal login error
+    setModalType("error");
+    setModalMessage(ERROR_MESSAGES.LOGIN_INVALID);
+    setModalVisible(true);
+  }
+};
 
   return (
     <SafeAreaView
@@ -67,12 +93,9 @@ export default function Login() {
         padding: scale(16),
       }}
     >
-      <Header title="Login" showBack={true} />
+      <Header title="Sign in to your Account" showBack={true} />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+     
         <View style={{ alignItems: "center", marginTop:isTablet() ? verticalScale(35) : verticalScale(70) }}>
           <Image
             source={require("../../assets/images/logoinapp.png")}
@@ -83,6 +106,10 @@ export default function Login() {
             }}
           />
         </View>
+         <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
         <View
           style={{
             flex: 1,
@@ -119,21 +146,39 @@ export default function Login() {
             }}
           />
 
-          <TextInput
-            placeholder="Enter your password"
-            placeholderTextColor={colors.textSecondary || "#999"}
-            autoCapitalize="none"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            style={{
-              borderBottomWidth: 1,
-              borderColor: colors.border,
-              marginBottom: verticalScale(20),
-              paddingVertical: verticalScale(10),
-              color: colors.text,
-            }}
-          />
+          <View style={{ position: "relative" }}>
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor={colors.textSecondary || "#999"}
+              autoCapitalize="none"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              style={{
+                borderBottomWidth: 1,
+                borderColor: colors.border,
+                marginBottom: verticalScale(20),
+                paddingVertical: verticalScale(10),
+                color: colors.text,
+                paddingRight: scale(40),
+              }}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: 0,
+                bottom: verticalScale(18),
+                padding: 10,
+              }}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={scale(20)}
+                color={colors.text}
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             onPress={() => router.push("/forgot-password")}

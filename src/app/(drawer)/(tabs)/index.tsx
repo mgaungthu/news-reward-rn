@@ -5,14 +5,15 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  FlatList,
   Image,
   Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import Skeleton from "react-native-reanimated-skeleton";
 
 import * as Device from "expo-device";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -44,6 +45,9 @@ export default function HomePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const isFocused = useIsFocused();
+
+  const [page, setPage] = useState(1);
+  const [loadingChunk, setLoadingChunk] = useState(false);
 
   const logScreenView = async (screenName: string) => {
     const analyticsInstance = getAnalytics();
@@ -89,9 +93,10 @@ export default function HomePage() {
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ padding: scale(16) }}
+      <FlatList
+        data={posts.slice(0, page * 2)}
+        showsVerticalScrollIndicator={false}
+        initialNumToRender={2}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -99,83 +104,123 @@ export default function HomePage() {
             tintColor={colors.primary}
           />
         }
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-      >
-        <HeaderBar
-          title="Lotaya Dinga"
-          subtitle="Stay updated & earn rewards!"
-        />
+        ListHeaderComponent={
+          <>
+            <HeaderBar
+              title="Lotaya Dinga"
+              subtitle="Stay updated & earn rewards!"
+            />
 
-        <View style={styles.banner}>
-          <Image source={{ uri: banner_image }} style={styles.bannerImage} />
-        </View>
+            <View style={styles.banner}>
+              <Image
+                source={{ uri: banner_image }}
+                style={styles.bannerImage}
+              />
+            </View>
 
-        <View style={{ marginVertical: verticalScale(10) }}>
-          <CustomTextInput
-            placeholder="Search..."
-            icon="search"
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            onSubmitEditing={handleSearchSubmit}
-            returnKeyType="search"
-          />
-        </View>
+            <View style={{ marginTop: verticalScale(15) }}>
+              <CustomTextInput
+                placeholder="Search..."
+                icon="search"
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                onSubmitEditing={handleSearchSubmit}
+                returnKeyType="search"
+              />
+            </View>
 
-        <View style={[styles.section]}>
-          <View style={[isIpad && styles.postsGrid]}>
-            {isLoading && <ActivityIndicator color={colors.primary} />}
-            {isError && (
-              <Text style={{ color: "red" }}>
-                Failed to load posts. Pull to refresh.
-              </Text>
-            )}
-            {!isLoading && !isError && posts.length === 0 && (
-              <Text
-                style={{
-                  textAlign: "center",
-                  color: colors.muted,
-                  marginTop: 20,
-                }}
-              >
-                No posts available at the moment.
-              </Text>
-            )}
-            {posts.map((item: any, index: number) => {
-              const hasRead = item.user_claims?.some(
-                (claim: any) =>
-                  claim.user_id === user?.id && claim.status === "claimed"
-              );
+            <View style={[styles.section]}>
+              <View style={[isIpad && styles.postsGrid]}>
+                {isLoading && <ActivityIndicator color={colors.primary} />}
+                {isError && (
+                  <Text style={{ color: "red" }}>
+                    Failed to load posts. Pull to refresh.
+                  </Text>
+                )}
+                {!isLoading && !isError && posts.length === 0 && (
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      color: colors.muted,
+                      marginTop: 20,
+                    }}
+                  >
+                    No posts available at the moment.
+                  </Text>
+                )}
+              </View>
+            </View>
+          </>
+        }
+        renderItem={({ item, index }) => {
+          const hasRead = item.user_claims?.some(
+            (claim: any) =>
+              claim.user_id === user?.id && claim.status === "claimed"
+          );
 
-              return (
-                <View key={item.id} style={[isIpad && styles.cardWrapper]}>
-                  <InterstitialAdCard
-                    i={index}
-                    adKey="news_home"
-                    threshold={3}
-                    id={item.id}
-                    title={item.title}
-                    excerpt={item.excerpt}
-                    feature_image={item.feature_image}
-                    feature_image_url={item.feature_image_url}
-                    created_at={item.created_at}
-                    readStatus={hasRead}
-                  />
-                  {index !== 0 && (index + 1) % 3 === 0 && (
-                    <View
-                      style={{
-                        justifyContent: "center",
-                      }}
-                    >
-                      <NativeAdCard />
-                    </View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      </ScrollView>
+          return (
+            <View style={[isIpad && styles.cardWrapper]}>
+              <InterstitialAdCard
+                i={index}
+                adKey="news_home"
+                threshold={3}
+                id={item.id}
+                title={item.title}
+                excerpt={item.excerpt}
+                feature_image={item.feature_image}
+                feature_image_url={item.feature_image_url}
+                created_at={item.created_at}
+                readStatus={hasRead}
+              />
+
+              {index !== 0 && (index + 1) % 2 === 0 && <NativeAdCard />}
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={isIpad ? 2 : 1}
+        columnWrapperStyle={
+          isIpad ? { justifyContent: "space-between" } : undefined
+        }
+        ListFooterComponent={() =>
+          loadingChunk ? (
+            <View style={{ width: "100%", }}>
+              <Skeleton
+                isLoading={loadingChunk}
+                containerStyle={{ flex: 1 }}
+                layout={[
+                  {
+                    key: "firstLine",
+                    width: "100%",
+                    height: 180,
+                    marginBottom: verticalScale(15),
+                    borderRadius: 10,
+                  },
+                  {
+                    key: "firstLine",
+                    width: "100%",
+                    height: 15,
+                    marginBottom: verticalScale(15),
+                    borderRadius: 10,
+                  },
+                ]}
+              />
+            </View>
+          ) : (
+            <View style={{ height: 30 }} />
+          )
+        }
+        onEndReachedThreshold={0.2}
+        onEndReached={() => {
+          if (!loadingChunk && page * 2 < posts.length) {
+            setLoadingChunk(true);
+            setTimeout(() => {
+              setPage((prev) => prev + 1);
+              setLoadingChunk(false);
+            }, 800);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -183,6 +228,7 @@ export default function HomePage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    padding: scale(16),
   },
   container: {
     flex: 1,
