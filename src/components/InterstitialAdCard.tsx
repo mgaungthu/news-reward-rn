@@ -145,8 +145,9 @@ function InterstitialAdCardBase({
       const res = await buyVipPost(id);
 
       // ✅ If backend includes message, display it
+      
       if (res?.message) {
-        setBuyMessage(SUCCESS_MESSAGES.VIP_PURCHASE_SUCCESS);
+        setBuyMessage(res?.message);
       } else {
         setBuyMessage(SUCCESS_MESSAGES.VIP_PURCHASE_SUCCESS);
       }
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     width: "100%",
-    aspectRatio: 2,
+    aspectRatio: 2.2,
   },
   imageContainer: {
     position: "relative",

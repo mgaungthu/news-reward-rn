@@ -1,7 +1,7 @@
 export const colors = {
   primary: "#E53935", // main red from logo
   secondary: "#000000", // black text color
-  background: "#FBFBFB", // white background
+  background: "#fdfafaff", // white background
   surface: "#F9F9F9", // subtle light gray for cards
   text: "#1C1C1E", // dark text
   muted: "#8E8E93", // muted gray for secondary text

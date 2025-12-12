@@ -7,8 +7,10 @@ import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Skeleton from "react-native-reanimated-skeleton";
 import RenderHtml from "react-native-render-html";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BannerAdComponent } from "./BannerAdComponent";
 export default function DetailComponent({
   post,
   colors,
@@ -19,6 +21,7 @@ export default function DetailComponent({
   hasUserClaimed,
   setShowWebView,
   width,
+  isLoading,
 }: {
   post: any;
   colors: any;
@@ -29,6 +32,7 @@ export default function DetailComponent({
   hasUserClaimed: (post: any) => boolean;
   setShowWebView: React.Dispatch<React.SetStateAction<boolean>>;
   width: number;
+  isLoading: boolean;
 }) {
   return (
    <SafeAreaView
@@ -42,8 +46,122 @@ export default function DetailComponent({
         }
       />
 
+      {isLoading && (
+        <View
+          style={{
+            position: "absolute",
+            top: verticalScale(100),
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: colors.background,
+            paddingHorizontal: scale(16),
+            paddingTop: scale(10),
+            zIndex: 999,
+          }}
+        >
+          <Skeleton
+            isLoading={isLoading}
+            containerStyle={{ flex: 1 }}
+            layout={[
+              {
+                key: "firstLine",
+                width: "100%",
+                height: 180,
+                marginBottom: verticalScale(15),
+                borderRadius: 10,
+              },
+              {
+                key: "secLine",
+                width: "100%",
+                height: 80,
+                marginBottom: verticalScale(15),
+                borderRadius: 10,
+              },
+              {
+                key: "someOtherId",
+                width: "100%",
+                height: 35,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "thirdLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "50%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "70%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "89%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "80%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "78%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "100%",
+                height: 20,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+              {
+                key: "fourthLine",
+                width: "100%",
+                height: 50,
+                marginBottom: verticalScale(10),
+                borderRadius: 10,
+              },
+            ]}
+          />
+        </View>
+      )}
+
       <ScrollView
-        style={{ flex: 1, backgroundColor: colors.background }}
+        style={{ flex: 1, backgroundColor: colors.background, opacity: isLoading ? 0 : 1 }}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
       >
@@ -169,6 +287,8 @@ export default function DetailComponent({
         </View>
 
         <NativeAdCard />
+
+        <BannerAdComponent/>
       </ScrollView>
     </SafeAreaView>
   );

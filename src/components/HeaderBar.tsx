@@ -1,10 +1,10 @@
 import { useTheme } from "@/theme/ThemeProvider";
 import { scale, verticalScale } from "@/utils/scale";
-import { Ionicons } from "@expo/vector-icons";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import Svg, { Rect } from "react-native-svg";
 
 export const HeaderBar = ({
   title = "Lotaya Dinga",
@@ -17,18 +17,29 @@ export const HeaderBar = ({
   const navigation = useNavigation<DrawerNavigationProp<any>>();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.primary }]}>
+    <View style={[styles.container, { backgroundColor: 'transperant' }]}>
       <View style={styles.headerRow}>
+        
         <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: "#fff" }]}>{title}</Text>
-          <Text style={[styles.subtitle, { color: "#f5f5f5" }]}>{subtitle}</Text>
+          <View>
+          <Image source={require('../../assets/images/logo.png')} style={{width:60,height:60}}/>
+          </View>
+          <View style={{padding:2}}>
+          <Text style={[styles.title, { color: colors.primary }]}>{title}</Text>
+          <Text style={[styles.subtitle, { color: colors.primary }]}>{subtitle}</Text>
+          </View>
         </View>
-        <Ionicons
-          name="menu"
-          size={scale(22)}
-          color="#fff"
-          onPress={() => navigation.openDrawer()}
-        />
+        <Pressable onPress={() => navigation.openDrawer()} hitSlop={10}>
+          <Svg
+            width={scale(26)}
+            height={verticalScale(20)}
+            viewBox="0 0 26 20"
+          >
+            <Rect x="0" y="0" width="16" height="3" rx="1.5" fill={colors.primary} />
+            <Rect x="4" y="8" width="22" height="3" rx="1.5" fill={colors.primary} />
+            <Rect x="2" y="16" width="12" height="3" rx="1.5" fill={colors.primary} />
+          </Svg>
+        </Pressable>
       </View>
     </View>
   );
@@ -37,9 +48,9 @@ export const HeaderBar = ({
 const styles = StyleSheet.create({
   container: {
     paddingVertical: verticalScale(10),
-    paddingHorizontal: verticalScale(20),
+    paddingHorizontal: verticalScale(3),
     borderRadius: scale(8),
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(5),
   },
   headerRow: {
     flexDirection: "row",
@@ -47,7 +58,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   titleContainer: {
-    flexDirection: "column",
+    flexDirection: "row",
+    alignItems:'center',
   },
   title: {
     fontSize: scale(21),

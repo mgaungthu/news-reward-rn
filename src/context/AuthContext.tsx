@@ -41,12 +41,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const loadAuth = async () => {
       const savedToken = await SecureStore.getItemAsync("accessToken");
       const savedUser = await SecureStore.getItemAsync("user");
+      const is_verify = await SecureStore.getItemAsync("is_verify");
       if (savedToken) setToken(savedToken);
       if (savedUser) setUser(JSON.parse(savedUser));
+      if (is_verify === 'ok') setisVerify(true);
       setLoading(false);
     };
     loadAuth();
   }, []);
+
+  const storeAuthData = async (token: string, user: any) => {
+    await SecureStore.setItemAsync("accessToken", token);
+    await SecureStore.setItemAsync("user", JSON.stringify(user));
+  };
 
   // Login logic
   const login = async (email: string, password: string) => {
@@ -56,18 +63,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // If user not verified → return error to component
     if (!res?.user.email_verified_at) {
-      await SecureStore.setItemAsync("accessToken", res.token);
-      await SecureStore.setItemAsync("user", JSON.stringify(res.user));
+      await storeAuthData(res.token, res.user);
       setisVerify(false);
       setToken(res.token);
       setUser(res.user || null);
       throw new Error("email_not_verified");
-      
     }
 
     // Normal login
-    await SecureStore.setItemAsync("accessToken", res.token);
-    await SecureStore.setItemAsync("user", JSON.stringify(res.user));
+    await storeAuthData(res.token, res.user);
+    await SecureStore.setItemAsync("is_verify", 'ok');
     setisVerify(true);
     setToken(res.token);
     setUser(res.user || null);
@@ -80,8 +85,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     clearFavorites();
     await SecureStore.deleteItemAsync("accessToken");
     await SecureStore.deleteItemAsync("user");
+    await SecureStore.deleteItemAsync("is_verify");
     setToken(null);
     setUser(null);
+    setisVerify(false);
   };
 
   const getUser = async () => {

@@ -22,7 +22,6 @@ const STORAGE_KEYS = {
 
 const REWARDED_COOLDOWN_MS = 5 * 60 * 1000; // 4 minutes
 
-
 // ---------- Compat: some versions don't export CLOSED/ERROR for Rewarded ----------
 const REWARDED_EVENTS = {
   LOADED: RewardedAdEventType.LOADED,
@@ -80,11 +79,9 @@ export const AdsProvider = ({ children }: { children: ReactNode }) => {
     null
   );
 
-    const NormaloRewardRef = useRef<null | ((amount: number, type?: string) => void)>(
-    null
-  );
-
-  
+  const NormaloRewardRef = useRef<
+    null | ((amount: number, type?: string) => void)
+  >(null);
 
   // ✅ new: remember we owe a show once load completes
   const pendingInterstitialShowRef = useRef(false);
@@ -187,7 +184,6 @@ export const AdsProvider = ({ children }: { children: ReactNode }) => {
       RewardedAdEventType.EARNED_REWARD,
       (reward: any) => {
         if (onRewardRef.current) {
-
           onRewardRef.current(Number(reward?.amount ?? 1), reward?.type);
         }
       }
@@ -335,16 +331,16 @@ export const AdsProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-          // One‑time reward listener
+    // One‑time reward listener
     const unsubEarned = rewarded.addAdEventListener(
-        REWARDED_EVENTS.EARNED_REWARD,
-        (reward: any) => {
-         if (NormaloRewardRef.current) {
+      REWARDED_EVENTS.EARNED_REWARD,
+      (reward: any) => {
+        if (NormaloRewardRef.current) {
           console.log("Normal calling");
           NormaloRewardRef.current(Number(reward?.amount ?? 1), reward?.type);
         }
-        }
-      );
+      }
+    );
 
     if (!loadingRewardedRef.current) {
       loadingRewardedRef.current = true;
@@ -380,8 +376,7 @@ export const AdsProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-
-       NormaloRewardRef.current = onReward ?? null;
+      NormaloRewardRef.current = onReward ?? null;
 
       // ❌ Rewarded not ready → try Rewarded Interstitial
       if (!rewarded || !rewardedLoaded || !rewarded.loaded) {
@@ -391,8 +386,6 @@ export const AdsProvider = ({ children }: { children: ReactNode }) => {
 
         return false;
       }
-
-
 
       try {
         await rewarded.show();

@@ -3,7 +3,6 @@ import React, { useCallback, useState } from "react";
 import {
   Alert,
   Animated,
-  Easing,
   Image,
   Platform,
   RefreshControl,
@@ -22,7 +21,7 @@ import { useRouter } from "expo-router";
 
 import { resetUserClaims } from "@/api/postApi";
 import { useAuth } from "@/context/AuthContext";
-import { useAds } from "@/hooks/useAds";
+import { useRewardReset } from "@/hooks/useRewardReset";
 import * as Application from "expo-application";
 
 export function LoggedInProfile() {
@@ -33,76 +32,13 @@ export function LoggedInProfile() {
   const router = useRouter();
   const { user, logout, getUser } = useAuth();
 
-  const {
-    showRewardedWithCooldown,
-    showRewardedInterstitialWithCooldown,
-    getRewardedRemainingMs,
-  } = useAds();
-
-  const shakeAnim = useState(new Animated.Value(0))[0];
-  const triggerShake = () => {
-    shakeAnim.setValue(0);
-    Animated.sequence([
-      Animated.timing(shakeAnim, {
-        toValue: 1,
-        duration: 80,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: -1,
-        duration: 80,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: 1,
-        duration: 80,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnim, {
-        toValue: 0,
-        duration: 80,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
+  const { handleRewardReset, shakeAnim } = useRewardReset();
 
   const goToReset = async () => {
     console.log("Normal api called");
     Alert.alert("Now, You’re ready to get new points!");
     await resetUserClaims();
   };
-
-  const handlePress = useCallback(async () => {
-    triggerShake();
-
-    const res = await getRewardedRemainingMs();
-    if (res) {
-      const minutes = Math.ceil(res / 60000);
-      Alert.alert("Please wait", `Try again in ${minutes} minute(s).`);
-      return;
-    }
-
-    // 2. Try to show Rewarded
-    const success = await showRewardedWithCooldown();
-
-    if (!success) {
-      // 3. Rewarded FAILED → User gesture (allowed by Google)
-      const res = await showRewardedInterstitialWithCooldown();
-      if (res) {
-        goToReset();
-      }
-    } else {
-      goToReset();
-    }
-  }, [
-    loadingReward,
-    showRewardedWithCooldown,
-    showRewardedInterstitialWithCooldown,
-  ]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -278,7 +214,10 @@ export function LoggedInProfile() {
                 ],
               }}
             >
-              <TouchableOpacity onPress={handlePress} style={styles.listItem}>
+              <TouchableOpacity
+                onPress={handleRewardReset}
+                style={styles.listItem}
+              >
                 <View style={styles.listLeft}>
                   <Ionicons
                     name="refresh-outline"

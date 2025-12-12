@@ -12,6 +12,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -112,7 +113,7 @@ export default function Register() {
         router.replace("/login");
       }, 1500);
     } catch (err: any) {
-      console.log(err, 'here')
+      console.log(err, "here");
       setModalType("error");
       setModalMessage(err.response?.data?.message || "Error");
       setModalVisible(true);
@@ -120,193 +121,201 @@ export default function Register() {
   };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: scale(16),
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      style={{ flex: 1 }}
     >
-      <Header title="Register" showBack={true} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          padding: scale(16),
+        }}
       >
-        <View style={{ alignItems: "center" }}>
-          <Image
-            source={require("../../assets/images/logoinapp.png")}
-            style={{
-              width: scale(120),
-              height: verticalScale(120),
-              resizeMode: "contain",
-            }}
-          />
-        </View>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            paddingHorizontal:
-              isTablet()
-                ? scale(60)
-                : scale(24),
-          }}
+        <Header title="Register" showBack={true} />
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text
-            style={{
-              fontSize: moderateScale(24),
-              fontWeight: "600",
-              color: colors.text,
-              textAlign: "center",
-              marginBottom: verticalScale(10),
-            }}
-          >
-            Welcome Aboard!
-          </Text>
-          <TextInput
-            placeholder="Enter your name"
-            placeholderTextColor={colors.textSecondary || "#999"}
-            autoCapitalize="none"
-            value={name}
-            onChangeText={setName}
-            style={{
-              borderBottomWidth: 1,
-              borderColor: colors.border,
-              marginBottom: verticalScale(20),
-              paddingVertical: verticalScale(10),
-              color: colors.text,
-            }}
-          />
-          <TextInput
-            placeholder="Enter your email"
-            placeholderTextColor={colors.textSecondary || "#999"}
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-            style={{
-              borderBottomWidth: 1,
-              borderColor: colors.border,
-              marginBottom: verticalScale(20),
-              paddingVertical: verticalScale(10),
-              color: colors.text,
-            }}
-          />
+          <View style={{ alignItems: "center" }}>
+            <Image
+              source={require("../../assets/images/logoinapp.png")}
+              style={{
+                width: scale(120),
+                height: verticalScale(120),
+                resizeMode: "contain",
+              }}
+            />
+            <Text
+              style={{
+                fontSize: moderateScale(24),
+                fontWeight: "600",
+                color: colors.text,
+                textAlign: "center",
+                marginBottom: verticalScale(10),
+              }}
+            >
+              Welcome Aboard!
+            </Text>
+          </View>
+
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              borderBottomWidth: 1,
-              borderColor: colors.border,
-              marginBottom: verticalScale(20),
+              flex: 1,
+              justifyContent: "center",
+              paddingHorizontal: isTablet() ? scale(60) : scale(24),
             }}
           >
             <TextInput
-              placeholder="Enter your password"
+              placeholder="Enter your name"
               placeholderTextColor={colors.textSecondary || "#999"}
               autoCapitalize="none"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
+              value={name}
+              onChangeText={setName}
               style={{
-                flex: 1,
+                borderBottomWidth: 1,
+                borderColor: colors.border,
+                marginBottom: verticalScale(20),
                 paddingVertical: verticalScale(10),
                 color: colors.text,
               }}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Ionicons
-                name={showPassword ? "eye" : "eye-off"}
-                size={moderateScale(20)}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
 
-          <TextInput
-            placeholder="Referral code (optional)"
-            placeholderTextColor={colors.textSecondary || "#999"}
-            value={referralCode}
-            onChangeText={setReferralCode}
-            autoCapitalize="characters"
-            style={{
-              borderBottomWidth: 1,
-              borderColor: colors.border,
-              marginBottom: verticalScale(20),
-              paddingVertical: verticalScale(10),
-              color: colors.text,
-            }}
-          />
-
-          <TouchableOpacity
-            onPress={() => setAcceptedTerms((prev) => !prev)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: verticalScale(20),
-              gap: scale(8),
-            }}
-          >
-            <Ionicons
-              name={acceptedTerms ? "checkbox" : "square-outline"}
-              size={moderateScale(20)}
-              color={acceptedTerms ? colors.primary : colors.textSecondary}
-            />
-            <Text
+            <TextInput
+              placeholder="Enter your email"
+              placeholderTextColor={colors.textSecondary || "#999"}
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
               style={{
-                flex: 1,
-                color: colors.textSecondary,
-                fontSize: scale(11),
+                borderBottomWidth: 1,
+                borderColor: colors.border,
+                marginBottom: verticalScale(20),
+                paddingVertical: verticalScale(10),
+                color: colors.text,
+              }}
+            />
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                borderBottomWidth: 1,
+                borderColor: colors.border,
+                marginBottom: verticalScale(20),
               }}
             >
-              I agree to the
+              <TextInput
+                placeholder="Enter your password"
+                placeholderTextColor={colors.textSecondary || "#999"}
+                autoCapitalize="none"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                style={{
+                  flex: 1,
+                  paddingVertical: verticalScale(10),
+                  color: colors.text,
+                }}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={showPassword ? "eye" : "eye-off"}
+                  size={moderateScale(20)}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              placeholder="Referral code (optional)"
+              placeholderTextColor={colors.textSecondary || "#999"}
+              value={referralCode}
+              onChangeText={setReferralCode}
+              autoCapitalize="characters"
+              style={{
+                borderBottomWidth: 1,
+                borderColor: colors.border,
+                marginBottom: verticalScale(20),
+                paddingVertical: verticalScale(10),
+                color: colors.text,
+              }}
+            />
+
+            <TouchableOpacity
+              onPress={() => setAcceptedTerms((prev) => !prev)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: verticalScale(20),
+                gap: scale(8),
+              }}
+            >
+              <Ionicons
+                name={acceptedTerms ? "checkbox" : "square-outline"}
+                size={moderateScale(20)}
+                color={acceptedTerms ? colors.primary : colors.textSecondary}
+              />
               <Text
-                style={{ color: colors.primary, fontWeight: "600" }}
-                onPress={() => router.push("/terms")}
+                style={{
+                  flex: 1,
+                  color: colors.textSecondary,
+                  fontSize: scale(11),
+                }}
               >
-                {" "}
-                Terms of Use
-              </Text>{" "}
-              and
-              <Text
-                style={{ color: colors.primary, fontWeight: "600" }}
-                onPress={() => router.push("/privacy")}
-              >
-                {" "}
-                Privacy Policy
+                I agree to the
+                <Text
+                  style={{ color: colors.primary, fontWeight: "600" }}
+                  onPress={() => router.push("/terms")}
+                >
+                  {" "}
+                  Terms of Use
+                </Text>{" "}
+                and
+                <Text
+                  style={{ color: colors.primary, fontWeight: "600" }}
+                  onPress={() => router.push("/privacy")}
+                >
+                  {" "}
+                  Privacy Policy
+                </Text>
               </Text>
-            </Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleRegister}
-            style={{
-              backgroundColor: colors.primary,
-              padding: verticalScale(12),
-              borderRadius: moderateScale(8),
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: colors.background, fontWeight: "600" }}>
-              Register
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleRegister}
+              style={{
+                backgroundColor: colors.primary,
+                padding: verticalScale(12),
+                borderRadius: moderateScale(8),
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: colors.background, fontWeight: "600" }}>
+                Register
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => router.push("/login")}
-            style={{ marginTop: verticalScale(20), alignItems: "center" }}
-          >
-            <Text>Already have an account? Login</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              onPress={() => router.push("/login")}
+              style={{ marginTop: verticalScale(20), alignItems: "center" }}
+            >
+              <Text>Already have an account? Login</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
 
         <BannerAdComponent />
-      </KeyboardAvoidingView>
-      <CustomModal
-        visible={modalVisible}
-        type={modalType}
-        message={modalMessage}
-        onClose={() => setModalVisible(false)}
-      />
-    </SafeAreaView>
+        <CustomModal
+          visible={modalVisible}
+          type={modalType}
+          message={modalMessage}
+          onClose={() => setModalVisible(false)}
+        />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

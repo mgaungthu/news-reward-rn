@@ -1,3 +1,5 @@
+
+import { encryptValue } from "@/utils/encryptValue";
 import axiosInstance from "./axiosInstance";
 
 // Fetch all posts
@@ -25,7 +27,11 @@ export const getPostById = async (id: number | string) => {
 // Claim post reward
 export const claimPostReward = async (postId: number | string) => {
   try {
-    const response = await axiosInstance.post(`/posts/${postId}/claim`);
+    const claim_pass = encryptValue(postId);
+
+    const response = await axiosInstance.post(`/posts/${postId}/claim`, {
+      claim_pass,
+    });
 
     return response.data;
   } catch (error: any) {

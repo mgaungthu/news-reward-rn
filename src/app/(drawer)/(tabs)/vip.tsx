@@ -107,6 +107,7 @@ export default function VipPosts() {
       <SafeAreaView
         style={{
           flex: 1,
+        width:'100%',
           backgroundColor: colors.background,
           alignItems: "center",
         }}
@@ -148,7 +149,7 @@ export default function VipPosts() {
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ padding: scale(16) }}
+        contentContainerStyle={{ padding: scale(16) , width:"100%"}}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}

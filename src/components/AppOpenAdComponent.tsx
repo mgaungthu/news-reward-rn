@@ -3,12 +3,19 @@ import React, { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import { AdEventType, AppOpenAd } from "react-native-google-mobile-ads";
 
-export const AppOpenAdComponent: React.FC = () => {
+interface AppOpenAdProps {
+  show?: boolean;
+}
+
+export const AppOpenAdComponent: React.FC<AppOpenAdProps> = ({show}) => {
   const appState = useRef(AppState.currentState);
   const isAdShowing = useRef(false);
   const isAdLoaded = useRef(false);
   const lastShownTime = useRef<number | null>(null);
   const { ad_app_open_id } = useSettingsStore();
+
+  if(show) 
+  return null
  
   useEffect(() => {
     if (!ad_app_open_id) {

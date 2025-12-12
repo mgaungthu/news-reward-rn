@@ -33,57 +33,55 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-  // Basic validation
-  if (!email.trim()) {
-    setModalType("error");
-    setModalMessage("Please enter your email.");
-    setModalVisible(true);
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) {
-    setModalType("error");
-    setModalMessage("Please enter a valid email address.");
-    setModalVisible(true);
-    return;
-  }
-
-  if (!password.trim()) {
-    setModalType("error");
-    setModalMessage("Please enter your password.");
-    setModalVisible(true);
-    return;
-  }
-
-  try {
-    await login(email, password);
-
-    setModalType("success");
-    setModalMessage("Login successful!");
-    setModalVisible(true);
-
-    setTimeout(() => {
-      setModalVisible(false);
-      router.replace("/");
-    }, 1200);
-  } catch (err: any) {
-    
-
-    // If AuthContext threw "email_not_verified"
-    if (err?.message === "email_not_verified") {
-      return router.push({
-        pathname: "/verify-email",
-        params: { email },
-      });
+    // Basic validation
+    if (!email.trim()) {
+      setModalType("error");
+      setModalMessage("Please enter your email.");
+      setModalVisible(true);
+      return;
     }
 
-    // Otherwise show normal login error
-    setModalType("error");
-    setModalMessage(ERROR_MESSAGES.LOGIN_INVALID);
-    setModalVisible(true);
-  }
-};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setModalType("error");
+      setModalMessage("Please enter a valid email address.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!password.trim()) {
+      setModalType("error");
+      setModalMessage("Please enter your password.");
+      setModalVisible(true);
+      return;
+    }
+
+    try {
+      await login(email, password);
+
+      setModalType("success");
+      setModalMessage("Login successful!");
+      setModalVisible(true);
+
+      setTimeout(() => {
+        setModalVisible(false);
+        router.replace("/");
+      }, 1200);
+    } catch (err: any) {
+      // If AuthContext threw "email_not_verified"
+      if (err?.message === "email_not_verified") {
+        return router.push({
+          pathname: "/verify-email",
+          params: { email },
+        });
+      }
+
+      // Otherwise show normal login error
+      setModalType("error");
+      setModalMessage(ERROR_MESSAGES.LOGIN_INVALID);
+      setModalVisible(true);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -95,29 +93,30 @@ export default function Login() {
     >
       <Header title="Sign in to your Account" showBack={true} />
 
-     
-        <View style={{ alignItems: "center", marginTop:isTablet() ? verticalScale(35) : verticalScale(70) }}>
-          <Image
-            source={require("../../assets/images/logoinapp.png")}
-            style={{
-              width: scale(120),
-              height: verticalScale(120),
-              resizeMode: "contain",
-            }}
-          />
-        </View>
-         <KeyboardAvoidingView
+      <View
+        style={{
+          alignItems: "center",
+          marginTop: isTablet() ? verticalScale(35) : verticalScale(70),
+        }}
+      >
+        <Image
+          source={require("../../assets/images/logoinapp.png")}
+          style={{
+            width: scale(120),
+            height: verticalScale(120),
+            resizeMode: "contain",
+          }}
+        />
+      </View>
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         <View
           style={{
             flex: 1,
-            marginTop:verticalScale(20),
-            paddingHorizontal:
-             isTablet()
-                ? scale(60)
-                : scale(24),
+            marginTop: verticalScale(20),
+            paddingHorizontal: isTablet() ? scale(60) : scale(24),
           }}
         >
           <Text
@@ -213,9 +212,10 @@ export default function Login() {
             <Text>Don't have an account? Register</Text>
           </TouchableOpacity>
         </View>
-        <BannerAdComponent/>
+        
       </KeyboardAvoidingView>
-
+        
+        <BannerAdComponent />
       <CustomModal
         visible={modalVisible}
         type={modalType}

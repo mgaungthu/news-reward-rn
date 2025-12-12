@@ -248,6 +248,7 @@ export default function PostsDetail() {
   return (
    <DetailComponent
       post={post}
+      isLoading={false}
       colors={colors}
       toggleFavorite={toggleFavorite}
       isFavorite={isFavorite}

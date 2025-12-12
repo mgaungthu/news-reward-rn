@@ -6,12 +6,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 SplashScreen.preventAutoHideAsync();
 
-import { AdsProvider } from "@/hooks/useAds";
-
 import { AppOpenAdComponent } from "@/components/AppOpenAdComponent";
 import { PreventModal } from "@/components/PreventModal";
 import SecondSplash from "@/components/SecondSplash";
 import { AuthProvider } from "@/context/AuthContext";
+import { AdsProvider } from "@/hooks/useAds";
+import { SpinWheelProvider } from "@/hooks/useSpinWheelAds";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
 import OfflineBanner from "@/components/OfflineBanner";
@@ -158,11 +158,14 @@ export default function Layout() {
     checkUpdate();
   }, []);
 
+  
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
           <AdsProvider>
+            <SpinWheelProvider>
             <PreventModal
               visible={forceUpdate}
               title="Update Required"
@@ -172,7 +175,7 @@ export default function Layout() {
               onPress={() => RNLinking.openURL(storeUrl)}
             />
             {!showSecondSplash && (
-              <AppOpenAdComponent />
+              <AppOpenAdComponent show={showSecondSplash}/>
             )}
             <StatusBar style="dark" />
             <SecondSplash showSecondSplash={showSecondSplash} />
@@ -182,6 +185,7 @@ export default function Layout() {
                 headerShown: false,
               }}
             />
+            </SpinWheelProvider>
           </AdsProvider>
         </ThemeProvider>
       </AuthProvider>

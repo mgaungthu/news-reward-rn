@@ -3,14 +3,11 @@ import { useIsFocused } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
-  Image,
   Platform,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import Skeleton from "react-native-reanimated-skeleton";
@@ -26,7 +23,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
 
 import { CustomTextInput } from "@/components/CustomTextInput";
-import { HeaderBar } from "@/components/HeaderBar";
+import HomeListHeader from "@/components/HomeListHeader";
 import NativeAdCard from "@/components/NativeAdCard";
 import { isTablet } from "@/utils/lib";
 import { useRouter } from "expo-router";
@@ -104,21 +101,9 @@ export default function HomePage() {
             tintColor={colors.primary}
           />
         }
-        ListHeaderComponent={
-          <>
-            <HeaderBar
-              title="Lotaya Dinga"
-              subtitle="Stay updated & earn rewards!"
-            />
-
-            <View style={styles.banner}>
-              <Image
-                source={{ uri: banner_image }}
-                style={styles.bannerImage}
-              />
-            </View>
-
-            <View style={{ marginTop: verticalScale(15) }}>
+        ListHeaderComponent={<>
+          <HomeListHeader colors={colors} banner_image={banner_image} />
+          <View style={{ marginBottom: verticalScale(15) }}>
               <CustomTextInput
                 placeholder="Search..."
                 icon="search"
@@ -127,28 +112,6 @@ export default function HomePage() {
                 onSubmitEditing={handleSearchSubmit}
                 returnKeyType="search"
               />
-            </View>
-
-            <View style={[styles.section]}>
-              <View style={[isIpad && styles.postsGrid]}>
-                {isLoading && <ActivityIndicator color={colors.primary} />}
-                {isError && (
-                  <Text style={{ color: "red" }}>
-                    Failed to load posts. Pull to refresh.
-                  </Text>
-                )}
-                {!isLoading && !isError && posts.length === 0 && (
-                  <Text
-                    style={{
-                      textAlign: "center",
-                      color: colors.muted,
-                      marginTop: 20,
-                    }}
-                  >
-                    No posts available at the moment.
-                  </Text>
-                )}
-              </View>
             </View>
           </>
         }
@@ -184,7 +147,7 @@ export default function HomePage() {
         }
         ListFooterComponent={() =>
           loadingChunk ? (
-            <View style={{ width: "100%", }}>
+            <View style={{ width: "100%" }}>
               <Skeleton
                 isLoading={loadingChunk}
                 containerStyle={{ flex: 1 }}

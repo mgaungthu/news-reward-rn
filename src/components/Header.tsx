@@ -35,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
     }, [params.ref]);
 
   const bgColor = backgroundColor ?? colors.primary;
-  const txtColor = textColor ?? "#fff";
+  const txtColor = textColor ?? colors.primary;
 
   return (
     <View
@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
         justifyContent: "center",
         paddingHorizontal: 16,
         borderRadius:10,
-        backgroundColor: bgColor,
+        // backgroundColor: bgColor,
         marginBottom:scale(10)
       }}
     >
@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
           // textAlign: "center",
           fontSize: 21,
           fontWeight: "500",
-          color: txtColor,
+          color: colors.primary,
           lineHeight: 56,
           marginRight: 40, // keeps title centered with back button width
         }}
